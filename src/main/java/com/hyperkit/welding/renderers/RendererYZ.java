@@ -1,17 +1,20 @@
-package com.hyperkit.welding;
+package com.hyperkit.welding.renderers;
 
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import com.hyperkit.welding.configurations.RenderConfiguration;
+import com.hyperkit.welding.Progress;
+import com.hyperkit.welding.Range;
+import com.hyperkit.welding.Search;
+import com.hyperkit.welding.configurations.Render2DConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
 
-public class Render {
+public class RendererYZ extends Renderer2D {
 	
 	private Search search;
-	private RenderConfiguration configuration;
+	private Render2DConfiguration configuration;
 	
-	public Render(Search search, RenderConfiguration configuration) {
+	public RendererYZ(Search search, Render2DConfiguration configuration) {
 		this.search = search;
 		this.configuration = configuration;
 	}

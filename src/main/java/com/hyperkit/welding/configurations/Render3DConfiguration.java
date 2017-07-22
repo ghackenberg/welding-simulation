@@ -7,10 +7,10 @@ import com.hyperkit.welding.annotations.Parameter;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class RenderConfiguration extends Configuration {
+public class Render3DConfiguration extends Configuration {
 	
-	public RenderConfiguration() {
-		super("Darstellungsparameter");
+	public Render3DConfiguration() {
+		super("3D-Darstellungsparameter");
 	}
 	
 	// Samples
