@@ -18,9 +18,8 @@ import com.hyperkit.welding.configurations.ModelConfiguration;
 import com.hyperkit.welding.configurations.Render2DConfiguration;
 import com.hyperkit.welding.configurations.Render3DConfiguration;
 import com.hyperkit.welding.configurations.SearchConfiguration;
+import com.hyperkit.welding.exceptions.SearchException;
 import com.hyperkit.welding.loaders.Loader2D;
-import com.hyperkit.welding.loaders.Loader3D;
-import com.hyperkit.welding.renderers.Renderer3D;
 import com.hyperkit.welding.renderers.RendererXY;
 import com.hyperkit.welding.renderers.RendererXZ;
 import com.hyperkit.welding.renderers.RendererYZ;
@@ -70,7 +69,6 @@ public class Main {
 		RendererXY render_xy = new RendererXY(search, render_xy_configuration);
 		RendererYZ render_yz = new RendererYZ(search, render_yz_configuration);
 		RendererXZ render_xz = new RendererXZ(search, render_xz_configuration);
-		Renderer3D render_3d = new Renderer3D(search, render_3d_configuration);
 
 		// Create panel
 
@@ -80,119 +78,10 @@ public class Main {
 		GLProfile profile = GLProfile.getDefault();
 		GLCapabilities capabilities = new GLCapabilities(profile);
 		GLCanvas canvas = new GLCanvas(capabilities);
-		canvas.addGLEventListener(new GLEventListener() {
-			
-			private GLU glu;
-			private int width;
-			private int height;
-
-			@Override
-			public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-				GL gl = drawable.getGL();
-				gl.glViewport(0, 0, width, height);
-				this.width = width;
-				this.height = height;
-			}
-			@Override
-			public void init(GLAutoDrawable drawable) {
-				glu = new GLU();
-			}
-			@Override
-			public void dispose(GLAutoDrawable drawable) {
-
-			}
-			@Override
-			public void display(GLAutoDrawable drawable) {
-				GL2 gl = (GL2) drawable.getGL();
-				gl.glClearColor(1f, 1f, 1f, 1f);
-				gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-
-				// Change to projection matrix
-				gl.glMatrixMode(GL2.GL_PROJECTION);
-				gl.glLoadIdentity();
-
-				// Perspective
-				float widthHeightRatio = (float) width / (float) height;
-				glu.gluPerspective(45, widthHeightRatio, 1, 1000);
-				glu.gluLookAt(50, 100, -200, 0, 0, 0, 0, 1, 0);
-
-				// Change back to model view matrix
-				gl.glMatrixMode(GL2.GL_MODELVIEW);
-				gl.glLoadIdentity();
-				
-				// Render data
-				
-				gl.glEnable(GL2.GL_POINT_SMOOTH);
-				gl.glEnable(GL2.GL_BLEND);
-				gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-				gl.glPointSize(10f);
-				
-				float points_length = 100f;
-				float points_step = 5f;
-				
-				gl.glBegin(GL2.GL_POINTS);
-
-				for (float x = -points_length; x <= points_length; x += points_step) {
-					for (float z = -points_length; z <= points_length; z += points_step) {
-						gl.glColor3f(Math.abs(x) / points_length, 1f, Math.abs(z) / points_length);
-						gl.glVertex3f(x, 0, z);
-					}
-				}
-				
-				gl.glEnd();
-				
-				// Render grid
-				
-				float grid_length = 100f;
-				float grid_step = 10f;
-				
-				float grid_r = 0.9f;
-				float grid_g = 0.9f;
-				float grid_b = 0.9f;
-				
-				for (float grid_x = -grid_length; grid_x <= grid_length; grid_x += grid_step) {
-					gl.glBegin(GL2.GL_LINES);
-					gl.glColor3f(grid_r, grid_g, grid_b);
-					gl.glVertex3f(grid_x, 0, -grid_length);
-					gl.glVertex3f(grid_x, 0, +grid_length);
-					gl.glEnd();
-				}
-				
-				for (float grid_z = -grid_length; grid_z <= grid_length; grid_z += grid_step) {
-					gl.glBegin(GL2.GL_LINES);
-					gl.glColor3f(grid_r, grid_g, grid_b);
-					gl.glVertex3f(-grid_length, 0, grid_z);
-					gl.glVertex3f(+grid_length, 0, grid_z);
-					gl.glEnd();
-				}
-				
-				// Render axes
-				
-				float axis_length = 110f;
-
-				gl.glBegin(GL2.GL_LINES);
-				gl.glColor3f(1, 0, 0);
-				gl.glVertex3f(-axis_length, 0, 0);
-				gl.glVertex3f(+axis_length, 0, 0);
-				gl.glEnd();
-				
-				gl.glBegin(GL2.GL_LINES);
-				gl.glColor3f(0, 0, 1);
-				gl.glVertex3f(0, -axis_length, 0);
-				gl.glVertex3f(0, +axis_length, 0);
-				gl.glEnd();
-				
-				gl.glBegin(GL2.GL_LINES);
-				gl.glColor3f(0, 1, 0);
-				gl.glVertex3f(0, 0, -axis_length);
-				gl.glVertex3f(0, 0, +axis_length);
-				gl.glEnd();
-			}
-		});
 
 		// Create progressbar
 
-		JProgressBar progress_bar = new JProgressBar();
+		final JProgressBar progress_bar = new JProgressBar();
 
 		progress_bar.setString("0 / 0 Diagrammpunkte");
 		progress_bar.setStringPainted(true);
@@ -254,6 +143,175 @@ public class Main {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// Create button action listener
+		
+		canvas.addGLEventListener(new GLEventListener() {
+			
+			private GLU glu;
+			private int width;
+			private int height;
+
+			@Override
+			public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+				GL gl = drawable.getGL();
+				gl.glViewport(0, 0, width, height);
+				this.width = width;
+				this.height = height;
+			}
+			@Override
+			public void init(GLAutoDrawable drawable) {
+				glu = new GLU();
+			}
+			@Override
+			public void dispose(GLAutoDrawable drawable) {
+
+			}
+			@Override
+			public void display(GLAutoDrawable drawable) {
+				try {
+					
+					// Clear canvas
+					
+					GL2 gl = (GL2) drawable.getGL();
+					gl.glClearColor(1f, 1f, 1f, 1f);
+					gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+					
+					// Find ranges
+				
+					Range range_x = search.findMaximumX(0, 0);
+					//Range range_y = search.findMaximumY(0, 0);
+					Range range_z = search.findMaximumZ(0, 0);
+	
+					// Change to projection matrix
+					
+					gl.glMatrixMode(GL2.GL_PROJECTION);
+					gl.glLoadIdentity();
+	
+					// Perspective
+					
+					double camera_x = render_3d_configuration.getCameraX();
+					double camera_y = render_3d_configuration.getCameraY();
+					double camera_z = render_3d_configuration.getCameraZ();
+					
+					double eye_x = render_3d_configuration.getEyeX();
+					double eye_y = render_3d_configuration.getEyeY();
+					double eye_z = render_3d_configuration.getEyeZ();
+					
+					float widthHeightRatio = (float) width / (float) height;
+					glu.gluPerspective(45, widthHeightRatio, 0.001, 1000);
+					glu.gluLookAt(camera_x, camera_y, camera_z, eye_x, eye_y, eye_z, 0, 1, 0);
+	
+					// Change back to model view matrix
+					
+					gl.glMatrixMode(GL2.GL_MODELVIEW);
+					gl.glLoadIdentity();
+					
+					// Render data
+					
+					gl.glEnable(GL2.GL_POINT_SMOOTH);
+					gl.glEnable(GL2.GL_BLEND);
+					gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+					gl.glPointSize(10);
+					
+					double points_step = render_3d_configuration.getSamples();
+					
+					gl.glBegin(GL2.GL_POINTS);
+					
+					double min = search_configuration.getLimitTemperature() - search_configuration.getTemperatureThershold();
+					double max = search_configuration.getLimitTemperature() - search_configuration.getTemperatureThershold();
+					
+					int total = 0;
+	
+					for (double x = -Math.abs(range_x.getLowerValue()) * 2; x <= Math.abs(range_x.getLowerValue()) * 2; x += points_step) {
+						//for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step) {
+							for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
+								double temperature = model.calculateTemperature(x, 0, z);
+								if (temperature >= search_configuration.getLimitTemperature() - search_configuration.getTemperatureThershold()) {
+									max = Math.max(max, temperature);
+									total++;
+								}
+							}
+						//}
+					}
+
+					progress_bar.setMaximum(0);
+					progress_bar.setMaximum(total);
+					
+					progress_bar.setValue(0);
+					progress_bar.setString("0/" + total + " Datenpunkte");
+					
+					int count = 0;
+	
+					for (double x = -Math.abs(range_x.getLowerValue()) * 2; x <= Math.abs(range_x.getLowerValue()) * 2; x += points_step) {
+						//for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step) {
+							for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
+								double temperature = model.calculateTemperature(x, 0, z);
+								if (temperature >= search_configuration.getLimitTemperature() - search_configuration.getTemperatureThershold()) {
+									gl.glColor3d(Math.sqrt((temperature - min) / (max - min)), 0, Math.sqrt(1 - (temperature - min) / (max - min)));
+									gl.glVertex3d(x, 0, z);
+									
+									count++;
+									
+									progress_bar.setValue(count);
+									progress_bar.setString(count + "/" + total  + " Datenpunkte");
+								}
+							}
+						//}
+					}
+					
+					gl.glEnd();
+					
+					// Render grid
+					
+					float grid_length = 1f;
+					float grid_step = 0.05f;
+					
+					float grid_r = 0.9f;
+					float grid_g = 0.9f;
+					float grid_b = 0.9f;
+					
+					for (float grid_x = -grid_length; grid_x <= grid_length; grid_x += grid_step) {
+						gl.glBegin(GL2.GL_LINES);
+						gl.glColor3f(grid_r, grid_g, grid_b);
+						gl.glVertex3f(grid_x, 0, -grid_length);
+						gl.glVertex3f(grid_x, 0, +grid_length);
+						gl.glEnd();
+					}
+					
+					for (float grid_z = -grid_length; grid_z <= grid_length; grid_z += grid_step) {
+						gl.glBegin(GL2.GL_LINES);
+						gl.glColor3f(grid_r, grid_g, grid_b);
+						gl.glVertex3f(-grid_length, 0, grid_z);
+						gl.glVertex3f(+grid_length, 0, grid_z);
+						gl.glEnd();
+					}
+					
+					// Render axes
+					
+					float axis_length = 110f;
+
+					gl.glBegin(GL2.GL_LINES);
+					gl.glColor3f(1, 0, 0);
+					gl.glVertex3f(-axis_length, 0, 0);
+					gl.glVertex3f(+axis_length, 0, 0);
+					gl.glEnd();
+					
+					gl.glBegin(GL2.GL_LINES);
+					gl.glColor3f(0, 0, 1);
+					gl.glVertex3f(0, -axis_length, 0);
+					gl.glVertex3f(0, +axis_length, 0);
+					gl.glEnd();
+					
+					gl.glBegin(GL2.GL_LINES);
+					gl.glColor3f(0, 1, 0);
+					gl.glVertex3f(0, 0, -axis_length);
+					gl.glVertex3f(0, 0, +axis_length);
+					gl.glEnd();
+					
+				} catch (SearchException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
 		button.addActionListener(new ActionListener() {
 			@Override
@@ -264,7 +322,7 @@ public class Main {
 						new Loader2D(frame, progress_bar, render_xy, chart_xy_panel, "XY-Schweißprofil", "Länge", "Breite").run();
 						new Loader2D(frame, progress_bar, render_yz, chart_yz_panel, "YZ-Schweißprofil", "Breite", "Tiefe").run();
 						new Loader2D(frame, progress_bar, render_xz, chart_xz_panel, "XZ-Schweißprofil", "Länge", "Tiefe").run();
-						new Loader3D(frame, progress_bar, render_3d).run();
+						canvas.display();
 					}
 				}).start();
 			}
