@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -33,7 +32,6 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.glu.GLUquadric;
 
 public class Main {
 
@@ -116,50 +114,79 @@ public class Main {
 				// Perspective
 				float widthHeightRatio = (float) width / (float) height;
 				glu.gluPerspective(45, widthHeightRatio, 1, 1000);
-				glu.gluLookAt(0, 100, -100, 0, 0, 0, 0, 1, 0);
+				glu.gluLookAt(50, 100, -200, 0, 0, 0, 0, 1, 0);
 
 				// Change back to model view matrix
 				gl.glMatrixMode(GL2.GL_MODELVIEW);
 				gl.glLoadIdentity();
-
-				/*
-				// Prepare light parameters
-				float SHINE_ALL_DIRECTIONS = 1;
-				float[] lightPos = { -200, 200, -200, SHINE_ALL_DIRECTIONS };
-				float[] lightColorAmbient = { 0.2f, 0.2f, 0.2f, 1f };
-				float[] lightColorSpecular = { 0.8f, 0.8f, 0.8f, 1f };
-
-				// Set light parameters
-				gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, lightPos, 0);
-				gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, lightColorAmbient, 0);
-				gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, lightColorSpecular, 0);
-
-				// Enable lighting in GL
-				gl.glEnable(GL2.GL_LIGHT1);
-				gl.glEnable(GL2.GL_LIGHTING);
-				gl.glEnable(GL2.GL_COLOR_MATERIAL);
-				*/
 				
-				// Render sphere
-				GLUquadric quadric = glu.gluNewQuadric();
+				// Render data
+				
+				gl.glEnable(GL2.GL_POINT_SMOOTH);
+				gl.glEnable(GL2.GL_BLEND);
+				gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+				gl.glPointSize(10f);
+				
+				float points_length = 100f;
+				float points_step = 5f;
+				
+				gl.glBegin(GL2.GL_POINTS);
 
-				glu.gluQuadricDrawStyle(quadric, GLU.GLU_FILL);
-				glu.gluQuadricNormals(quadric, GLU.GLU_FLAT);
-				glu.gluQuadricOrientation(quadric, GLU.GLU_OUTSIDE);
-
-				for (int x = 0; x < 10; x++) {
-					for (int y = 0; y < 10; y++) {
-						for (int z = 0; z < 10; z++) {
-							gl.glPushMatrix();
-							gl.glColor3f(x / 10f, y / 10f, z / 10f);
-							gl.glTranslatef(x * 5, y * 5, z * 5);
-							glu.gluSphere(quadric, 0.5f, 10, 10);
-							gl.glPopMatrix();
-						}
+				for (float x = -points_length; x <= points_length; x += points_step) {
+					for (float z = -points_length; z <= points_length; z += points_step) {
+						gl.glColor3f(Math.abs(x) / points_length, 1f, Math.abs(z) / points_length);
+						gl.glVertex3f(x, 0, z);
 					}
 				}
+				
+				gl.glEnd();
+				
+				// Render grid
+				
+				float grid_length = 100f;
+				float grid_step = 10f;
+				
+				float grid_r = 0.9f;
+				float grid_g = 0.9f;
+				float grid_b = 0.9f;
+				
+				for (float grid_x = -grid_length; grid_x <= grid_length; grid_x += grid_step) {
+					gl.glBegin(GL2.GL_LINES);
+					gl.glColor3f(grid_r, grid_g, grid_b);
+					gl.glVertex3f(grid_x, 0, -grid_length);
+					gl.glVertex3f(grid_x, 0, +grid_length);
+					gl.glEnd();
+				}
+				
+				for (float grid_z = -grid_length; grid_z <= grid_length; grid_z += grid_step) {
+					gl.glBegin(GL2.GL_LINES);
+					gl.glColor3f(grid_r, grid_g, grid_b);
+					gl.glVertex3f(-grid_length, 0, grid_z);
+					gl.glVertex3f(+grid_length, 0, grid_z);
+					gl.glEnd();
+				}
+				
+				// Render axes
+				
+				float axis_length = 110f;
 
-				glu.gluDeleteQuadric(quadric);
+				gl.glBegin(GL2.GL_LINES);
+				gl.glColor3f(1, 0, 0);
+				gl.glVertex3f(-axis_length, 0, 0);
+				gl.glVertex3f(+axis_length, 0, 0);
+				gl.glEnd();
+				
+				gl.glBegin(GL2.GL_LINES);
+				gl.glColor3f(0, 0, 1);
+				gl.glVertex3f(0, -axis_length, 0);
+				gl.glVertex3f(0, +axis_length, 0);
+				gl.glEnd();
+				
+				gl.glBegin(GL2.GL_LINES);
+				gl.glColor3f(0, 1, 0);
+				gl.glVertex3f(0, 0, -axis_length);
+				gl.glVertex3f(0, 0, +axis_length);
+				gl.glEnd();
 			}
 		});
 
