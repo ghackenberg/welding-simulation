@@ -2,10 +2,13 @@ package com.hyperkit.welding.configurations;
 
 import com.hyperkit.welding.Configuration;
 import com.hyperkit.welding.annotations.DoubleParameter;
+import com.hyperkit.welding.annotations.IntegerParameter;
 import com.hyperkit.welding.annotations.Parameter;
 
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 public class Render3DConfiguration extends Configuration {
 	
@@ -40,7 +43,7 @@ public class Render3DConfiguration extends Configuration {
 		this.camera_y.set(samples);
 	}
 	@Parameter(name = "Kamera Y-Position", unit = "mm")
-	@DoubleParameter(min = 0, max = 10.0, step = 0.1)
+	@DoubleParameter(min = 0, max = 10, step = 0.1)
 	public DoubleProperty cameraYProperty() {
 		return camera_y;
 	}
@@ -123,6 +126,22 @@ public class Render3DConfiguration extends Configuration {
 	@DoubleParameter(min = 0, max = 0.1, step = 0.001)
 	public DoubleProperty samplesProperty() {
 		return samples;
+	}
+	
+	// Samples
+	
+	private IntegerProperty pointSize = new SimpleIntegerProperty(5);
+	
+	public int getPointSize() {
+		return pointSize.get();
+	}
+	public void setPointSize(int samples) {
+		this.pointSize.set(samples);
+	}
+	@Parameter(name = "Punktgröße", unit = "Pixel")
+	@IntegerParameter(min = 1, max = 20)
+	public IntegerProperty pointSizeProperty() {
+		return pointSize;
 	}
 
 }

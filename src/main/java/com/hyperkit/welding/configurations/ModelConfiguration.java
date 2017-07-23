@@ -27,7 +27,7 @@ public class ModelConfiguration extends Configuration {
 		this.start_temperature.set(start_temperature);
 	}
 	@Parameter(name = "Ausgangstemperatur", unit = "∞C")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty startTemperatureProperty() {
 		return start_temperature;
 	}
@@ -43,7 +43,7 @@ public class ModelConfiguration extends Configuration {
 		this.samples.set(samples);
 	}
 	@Parameter(name = "W‰rmequellen", unit = " * 2 + 1 Quellen")
-	@IntegerParameter()
+	@IntegerParameter(min = 0)
 	public IntegerProperty samplesProperty() {
 		return samples;
 	}
@@ -59,7 +59,7 @@ public class ModelConfiguration extends Configuration {
 		this.diameter.set(diameter);
 	}
 	@Parameter(name = "Pendelbreite", unit = "mm")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty diameterProperty() {
 		return diameter;
 	}
@@ -75,7 +75,7 @@ public class ModelConfiguration extends Configuration {
 		this.total_heat.set(total_heat);
 	}
 	@Parameter(name = "W‰rmeeintrag", unit = "W")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty totalHeatProperty() {
 		return total_heat;
 	}
@@ -91,7 +91,7 @@ public class ModelConfiguration extends Configuration {
 		this.welding_speed.set(welding_speed);
 	}
 	@Parameter(name = "Schweiﬂgeschwindigkeit", unit = "cm/min")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty weldingSpeedProperty() {
 		return welding_speed;
 	}
@@ -107,7 +107,7 @@ public class ModelConfiguration extends Configuration {
 		this.thermal_diffusivity.set(thermal_diffusivity);
 	}
 	@Parameter(name = "Temperaturleitf‰higkeit", unit = "mm≤/s")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty thermalDiffusivityProperty() {
 		return thermal_diffusivity;
 	}
@@ -123,7 +123,7 @@ public class ModelConfiguration extends Configuration {
 		this.thermal_conductivity.set(thermal_conductivity);
 	}
 	@Parameter(name = "W‰rmeleitf‰higkeit", unit = "W/(mK)")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty thermalConductivityProperty() {
 		return thermal_conductivity;
 	}

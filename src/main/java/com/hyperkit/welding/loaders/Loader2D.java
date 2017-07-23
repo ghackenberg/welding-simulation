@@ -11,6 +11,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Integrator;
+import com.hyperkit.welding.Loader;
 import com.hyperkit.welding.Progress;
 import com.hyperkit.welding.exceptions.SearchException;
 import com.hyperkit.welding.renderers.Renderer2D;

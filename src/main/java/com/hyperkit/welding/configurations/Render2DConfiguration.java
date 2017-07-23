@@ -24,7 +24,7 @@ public class Render2DConfiguration extends Configuration {
 		this.samples.set(samples);
 	}
 	@Parameter(name = "Diagrammpunkte", unit = "Punkte")
-	@IntegerParameter()
+	@IntegerParameter(min = 1)
 	public IntegerProperty samplesProperty() {
 		return samples;
 	}

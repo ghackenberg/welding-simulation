@@ -24,7 +24,7 @@ public class SearchConfiguration extends Configuration {
 		this.limit_temperature.set(limit_temperature);
 	}
 	@Parameter(name = "Zieltemperatur", unit = "°C")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty limitTemperatureProperty() {
 		return limit_temperature;
 	}
@@ -40,7 +40,7 @@ public class SearchConfiguration extends Configuration {
 		this.temperature_threshold.set(temperature_threshold);
 	}
 	@Parameter(name = "Temperaturgenaugigkeit", unit = "°C")
-	@DoubleParameter()
+	@DoubleParameter(min = 0)
 	public DoubleProperty temperatureThresholdProperty() {
 		return temperature_threshold;
 	}

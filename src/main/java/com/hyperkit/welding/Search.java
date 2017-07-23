@@ -7,7 +7,7 @@ public class Search {
 	
 	// Limit the number of iterations
 	private static final long OUTER_LIMIT = 10000;
-	private static final long INNER_LIMIT = 10000;
+	private static final long INNER_LIMIT = 100;
 	
 	private Model model;
 	private SearchConfiguration configuration;

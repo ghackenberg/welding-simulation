@@ -91,25 +91,24 @@ public class Main {
 		// Create button
 
 		JButton button = new JButton("Schweiﬂprofil berechnen");
-
-		// Create panel
-
-		JPanel parameter_panel = new JPanel();
-
-		parameter_panel.setLayout(new GridLayout(6, 1));
-		parameter_panel.add(model_configuration.createPanel());
-		parameter_panel.add(search_configuration.createPanel());
-		parameter_panel.add(render_xy_configuration.createPanel());
-		parameter_panel.add(render_yz_configuration.createPanel());
-		parameter_panel.add(render_xz_configuration.createPanel());
-		parameter_panel.add(render_3d_configuration.createPanel());
+		
+		// Create configurator
+		
+		Configurator configurator = new Configurator();
+		
+		configurator.addConfiguration(model_configuration);
+		configurator.addConfiguration(search_configuration);
+		configurator.addConfiguration(render_xy_configuration);
+		configurator.addConfiguration(render_yz_configuration);
+		configurator.addConfiguration(render_xz_configuration);
+		configurator.addConfiguration(render_3d_configuration);
 
 		// Create panel
 
 		JPanel configuration_panel = new JPanel();
 
 		configuration_panel.setLayout(new BorderLayout());
-		configuration_panel.add(parameter_panel, BorderLayout.CENTER);
+		configuration_panel.add(configurator.createPanel(), BorderLayout.CENTER);
 		configuration_panel.add(button, BorderLayout.PAGE_END);
 
 		// Create panel
@@ -210,7 +209,7 @@ public class Main {
 					gl.glEnable(GL2.GL_POINT_SMOOTH);
 					gl.glEnable(GL2.GL_BLEND);
 					gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-					gl.glPointSize(10);
+					gl.glPointSize(render_3d_configuration.getPointSize());
 					
 					double points_step = render_3d_configuration.getSamples();
 					
@@ -221,9 +220,9 @@ public class Main {
 					
 					int total = 0;
 	
-					for (double x = -Math.abs(range_x.getLowerValue()) * 2; x <= Math.abs(range_x.getLowerValue()) * 2; x += points_step) {
+					for (double x = -Math.abs(range_x.getLowerValue()); x <= Math.abs(range_x.getLowerValue()); x += points_step) {
 						//for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step) {
-							for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
+							for (double z = -Math.abs(range_z.getLowerValue()); z <= Math.abs(range_z.getLowerValue()); z += points_step) {
 								double temperature = model.calculateTemperature(x, 0, z);
 								if (temperature >= search_configuration.getLimitTemperature() - search_configuration.getTemperatureThershold()) {
 									max = Math.max(max, temperature);
