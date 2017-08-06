@@ -21,7 +21,13 @@ public class Search {
 		return model;
 	}
 	
+	public SearchConfiguration getConfiguration() {
+		return configuration;
+	}
+	
 	public Range findMaximumY(double x, double z) throws SearchException {
+		
+		System.out.println("[Search.findMaximumY(" + x + ", " + z + ")] Starting ...");
 		
 		long outer_timestamp = System.currentTimeMillis();
 		
@@ -42,7 +48,7 @@ public class Search {
 		
 		while (limit_temperature < lower_temperature || limit_temperature - lower_temperature > temperature_threshold || limit_temperature > upper_temperature || upper_temperature - limit_temperature > temperature_threshold) {
 			
-			System.out.println("Step size: " + step_size);
+			//System.out.println("Step size: " + step_size);
 			
 			if (step_size == 0.0) {
 				throw new SearchException("Problem: x = " + x + ", lower_y = " + lower_y + ", upper_y = " + upper_y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
@@ -146,12 +152,16 @@ public class Search {
 			step_size /= 2.0;
 		}
 		
+		System.out.println("[Search.findMaximumY(" + x + ", " + z + ")] Returning [" + lower_y + ", " + upper_y + "]");
+		
 		// Return the range
 		
 		return new Range(lower_y, upper_y);
 	}
 	
 	public Range findMaximumZ(double x, double y) throws SearchException {
+		
+		System.out.println("[Search.findMaximumZ(" + x + ", " + y + ")] Starting ...");
 		
 		long outer_timestamp = System.currentTimeMillis();
 		
@@ -277,10 +287,14 @@ public class Search {
 			step_size /= 2.0;	
 		}
 		
+		System.out.println("[Search.findMaximumZ(" + x + ", " + y + ")] Returning [" + lower_z + ", " + upper_z + "]");
+		
 		return new Range(lower_z, upper_z);
 	}
 	
-	public Range findMaximumX(double y, double z) throws SearchException {
+	public Range findMinimumX(double y, double z) throws SearchException {
+		
+		System.out.println("[Search.findMinimumX(" + y + ", " + z + ")] Starting ...");
 		
 		long outer_timestamp = System.currentTimeMillis();
 		
@@ -301,7 +315,140 @@ public class Search {
 		
 		while (limit_temperature < lower_temperature || limit_temperature - lower_temperature > temperature_threshold || limit_temperature > upper_temperature || upper_temperature - limit_temperature > temperature_threshold) {
 			
-			System.out.println("Step size: " + step_size + ", lower_x: " + lower_x + ", upper_x: " + upper_x + ", lower_temp: " + lower_temperature + ", upper_temp: " + upper_temperature);
+			//System.out.println("Step size: " + step_size + ", lower_x: " + lower_x + ", upper_x: " + upper_x + ", lower_temp: " + lower_temperature + ", upper_temp: " + upper_temperature);
+			
+			if (step_size == 0.0) {
+				throw new SearchException("Problem: lower_x = " + lower_x + ", upper_x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
+			}
+			
+			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+				throw new SearchException("Problem 6: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
+			}
+			
+			// Update lower limit
+			
+			if (lower_temperature > limit_temperature) {
+				
+				long inner_timestamp = System.currentTimeMillis();
+				
+				// Execute the search
+				
+				do {
+					
+					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+						throw new SearchException("Problem 7: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", lower_temperature = " + lower_temperature + ", limit_tempature = " + limit_temperature);
+					}
+					
+					// Update the search variables
+					
+					lower_x -= step_size;
+					lower_temperature = model.calculateTemperature(lower_x, y, z);
+					
+				} while(lower_temperature > limit_temperature);
+				
+			}
+			else {
+				
+				long inner_timestamp = System.currentTimeMillis();
+				
+				// Initialize the search variables
+				
+				double next_temperature;
+				
+				// Execute the search
+				
+				while (lower_x + step_size <= 0 && (next_temperature = model.calculateTemperature(lower_x + step_size, y, z)) < limit_temperature) {
+					// Check the iteration number
+					
+					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+						throw new SearchException("Problem 8: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
+					}
+					
+					// Update the search variables
+					
+					lower_x += step_size;
+					lower_temperature = next_temperature;
+				}
+			}
+			
+			// Update upper limit
+			
+			if (upper_temperature < limit_temperature) {
+				
+				long inner_timestamp = System.currentTimeMillis();
+				
+				// Execute the search
+				
+				do {
+					
+					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+						throw new SearchException("Problem 9: x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", upper_temperature = " + upper_temperature + ", limit_tempature = " + limit_temperature);
+					}
+					
+					// Update the search variables
+					
+					upper_x += step_size;
+					upper_temperature = model.calculateTemperature(upper_x, y, z);
+					
+				} while (upper_temperature < limit_temperature);
+				
+			} else {
+				
+				long inner_timestamp = System.currentTimeMillis();
+				
+				// Initialize the search variables
+				
+				double next_temperature;
+				
+				// Execute the search
+				
+				while ((next_temperature = model.calculateTemperature(upper_x - step_size, y, z)) > limit_temperature) {
+					
+					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+						throw new SearchException("Problem 10: x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
+					}
+					
+					// Update the search variables
+					
+					upper_x -= step_size;
+					upper_temperature = next_temperature;
+				}
+			}
+			
+			// Update step size
+			
+			step_size /= 2.0;	
+		}
+		
+		System.out.println("[Search.findMinimumX(" + y + ", " + z + ")] Returning [" + lower_x + ", " + upper_x + "]");
+		
+		return new Range(lower_x, upper_x);
+	}
+	
+	public Range findMaximumX(double y, double z) throws SearchException {
+		
+		System.out.println("[Search.findMaximumX(" + y + ", " + z + ")] Starting ...");
+		
+		long outer_timestamp = System.currentTimeMillis();
+		
+		// Initialize the search variables
+		
+		double limit_temperature = configuration.getLimitTemperature();
+		double temperature_threshold = configuration.getTemperatureThershold();
+		
+		double step_size = model.getConfiguration().getDiameter() / 2.0;
+		
+		double lower_x = 0;
+		double upper_x = 0;
+		
+		double lower_temperature = model.calculateTemperature(lower_x, y, z);
+		double upper_temperature = model.calculateTemperature(upper_x, y, z);
+		
+		// Execute the search
+		
+		while (limit_temperature < lower_temperature || limit_temperature - lower_temperature > temperature_threshold || limit_temperature > upper_temperature || upper_temperature - limit_temperature > temperature_threshold) {
+			
+			//System.out.println("Step size: " + step_size + ", lower_x: " + lower_x + ", upper_x: " + upper_x + ", lower_temp: " + lower_temperature + ", upper_temp: " + upper_temperature);
 			
 			if (step_size == 0.0) {
 				throw new SearchException("Problem: lower_x = " + lower_x + ", upper x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
@@ -405,6 +552,8 @@ public class Search {
 			
 			step_size /= 2.0;	
 		}
+		
+		System.out.println("[Search.findMaximumX(" + y + ", " + z + ")] Returning [" + lower_x + ", " + upper_x + "]");
 		
 		return new Range(lower_x, upper_x);
 	}

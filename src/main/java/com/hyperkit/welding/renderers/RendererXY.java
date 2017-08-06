@@ -19,42 +19,44 @@ public class RendererXY extends Renderer2D {
 		this.configuration = configuration;
 	}
 	
-	public XYSeriesCollection generateDataset(Progress progress) throws SearchException {
+	public XYSeriesCollection generateDataset(Range min_x, Range max_x, double z, Progress progress) throws SearchException {
 		XYSeries lower_series = new XYSeries("Obere Grenze");
 		XYSeries upper_series = new XYSeries("Untere Grenze");
 		
-		int samples = configuration.getSamples();
+		int samples = configuration.getXYSamples();
 		
 		progress.initialize(samples + 1);
 		
-		Range y_range = search.findMaximumY(0, 0);
+		System.out.println("[RendererXY.generateDataset(" + min_x + ", " + max_x + ", progress)] min_x = " + min_x);
+		System.out.println("[RendererXY.generateDataset(" + min_x + ", " + max_x + ", progress)]" + search.getModel().calculateTemperature(min_x.getLowerValue(), 0, z));
+		System.out.println("[RendererXY.generateDataset(" + min_x + ", " + max_x + ", progress)]" + search.getModel().calculateTemperature(min_x.getUpperValue(), 0, z));
 		
-		System.out.println("Y Range: " + y_range.getLowerValue() + " bis " + y_range.getUpperValue());
-		System.out.println(search.getModel().calculateTemperature(0, y_range.getLowerValue(), 0));
-		System.out.println(search.getModel().calculateTemperature(0, y_range.getUpperValue(), 0));
+		System.out.println("[RendererXY.generateDataset(" + min_x + ", " + max_x + ", progress)] max_x = " + max_x);
+		System.out.println("[RendererXY.generateDataset(" + min_x + ", " + max_x + ", progress)]" + search.getModel().calculateTemperature(max_x.getLowerValue(), 0, z));
+		System.out.println("[RendererXY.generateDataset(" + min_x + ", " + max_x + ", progress)]" + search.getModel().calculateTemperature(max_x.getUpperValue(), 0, z));
 		
 		for (int sample = 0; sample < samples; sample++) {
-			double lower_y = y_range.getLowerValue() / samples * sample;
-			double upper_y = y_range.getUpperValue() / samples * sample;
+			double lower_x = (max_x.getLowerValue() - min_x.getLowerValue()) / samples * sample + min_x.getLowerValue();
+			double upper_x = (max_x.getUpperValue() - min_x.getUpperValue()) / samples * sample + min_x.getUpperValue();
 			
-			Range lower_z_range;
-			
-			try {
-				lower_z_range = search.findMaximumZ(0, lower_y);
-			} catch (SearchException exception) {
-				lower_z_range = new Range(0, 0);
-			}
-			
-			Range upper_z_range;
+			Range lower_y_range;
 			
 			try {
-				upper_z_range = search.findMaximumZ(0, upper_y);
+				lower_y_range = search.findMaximumY(lower_x, z);
 			} catch (SearchException exception) {
-				upper_z_range = new Range(0, 0);
+				lower_y_range = new Range(0, 0);
 			}
 			
-			lower_series.add(Math.abs(lower_y) * 10, -Math.abs(lower_z_range.getLowerValue()) * 10);
-			upper_series.add(Math.abs(upper_y) * 10, -Math.abs(upper_z_range.getUpperValue()) * 10);
+			Range upper_y_range;
+			
+			try {
+				upper_y_range = search.findMaximumY(upper_x, z);
+			} catch (SearchException exception) {
+				upper_y_range = new Range(0, 0);
+			}
+			
+			lower_series.add(lower_x * 10, -Math.abs(lower_y_range.getLowerValue()) * 10);
+			upper_series.add(upper_x * 10, -Math.abs(upper_y_range.getUpperValue()) * 10);
 			
 			//System.out.println("Sample: " + sample + " " + lower_y + " " + lower_z_range.getLowerValue());
 			//System.out.println("Sample: " + sample + " " + upper_y + " " + upper_z_range.getUpperValue());
@@ -62,8 +64,8 @@ public class RendererXY extends Renderer2D {
 			progress.update(sample + 1, samples + 1);
 		}
 		
-		lower_series.add(Math.abs(y_range.getLowerValue()) * 10, 0);
-		upper_series.add(Math.abs(y_range.getUpperValue()) * 10, 0);
+		lower_series.add(max_x.getLowerValue() * 10, 0);
+		upper_series.add(max_x.getUpperValue() * 10, 0);
 		
 		XYSeriesCollection collection = new XYSeriesCollection();
 		

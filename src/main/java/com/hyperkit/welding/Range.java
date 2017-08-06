@@ -18,4 +18,9 @@ public class Range {
 		return upper_value;
 	}
 	
+	@Override
+	public String toString() {
+		return "[" + lower_value + ", " + upper_value + "]";
+	}
+	
 }

@@ -34,7 +34,7 @@ public class ModelConfiguration extends Configuration {
 	
 	// Samples
 	
-	private IntegerProperty samples = new SimpleIntegerProperty(10);
+	private IntegerProperty samples = new SimpleIntegerProperty(20);
 	
 	public int getSamples() {
 		return samples.get();

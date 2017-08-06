@@ -16,15 +16,15 @@ import com.hyperkit.welding.Progress;
 import com.hyperkit.welding.exceptions.SearchException;
 import com.hyperkit.welding.renderers.Renderer2D;
 
-public class Loader2D extends Loader {
+public abstract class Loader2D<T extends Renderer2D> extends Loader {
 	
-	private Renderer2D render;
+	private T render;
 	private ChartPanel chart_panel;
 	private String name;
 	private String x_axis;
 	private String y_axis;
 	
-	public Loader2D(JFrame frame, JProgressBar progress_bar, Renderer2D render, ChartPanel chart_panel, String name, String x_axis, String y_axis) {
+	public Loader2D(JFrame frame, JProgressBar progress_bar, T render, ChartPanel chart_panel, String name, String x_axis, String y_axis) {
 		super(frame, progress_bar);
 		this.render = render;
 		this.chart_panel = chart_panel;
@@ -33,12 +33,19 @@ public class Loader2D extends Loader {
 		this.y_axis = y_axis;
 	}
 	
+	public T getRenderer() {
+		return render;
+	}
+	
+	protected abstract XYSeriesCollection generateDataset(Progress progress) throws SearchException;
+	protected abstract String getAnnotation();
+	
 	@Override
 	public void run() {
 		try {
 			// Create dataset
 	
-			XYSeriesCollection dataset_yz = render.generateDataset(new Progress() {
+			XYSeriesCollection dataset_yz = generateDataset(new Progress() {
 				@Override
 				public void initialize(int total) {
 					progress_bar.setMaximum(total);
@@ -59,7 +66,7 @@ public class Loader2D extends Loader {
 	
 			// Create chart
 	
-			JFreeChart chart_yz = ChartFactory.createXYLineChart(name + " (Fläche = " + FORMAT.format(lower_area) + " bis " + FORMAT.format(upper_area) + " mm²)",  x_axis + " (in mm)", y_axis + " (in mm)", dataset_yz, PlotOrientation.VERTICAL, true, true, false);
+			JFreeChart chart_yz = ChartFactory.createXYLineChart(name + " (Fläche = " + FORMAT.format(lower_area) + " bis " + FORMAT.format(upper_area) + " mm², " + getAnnotation() + ")",  x_axis + " (in mm)", y_axis + " (in mm)", dataset_yz, PlotOrientation.VERTICAL, true, true, false);
 	
 			// Update panel
 	

@@ -9,24 +9,56 @@ import javafx.beans.property.SimpleIntegerProperty;
 
 public class Render2DConfiguration extends Configuration {
 	
-	public Render2DConfiguration(String name) {
-		super(name);
+	public Render2DConfiguration() {
+		super("2D-Darstellungsparameter");
 	}
 	
 	// Samples
 	
-	private IntegerProperty samples = new SimpleIntegerProperty(10);
+	private IntegerProperty xySamples = new SimpleIntegerProperty(200);
 	
-	public int getSamples() {
-		return samples.get();
+	public int getXYSamples() {
+		return xySamples.get();
 	}
-	public void setSamples(int samples) {
-		this.samples.set(samples);
+	public void setXYSamples(int xySamples) {
+		this.xySamples.set(xySamples);
 	}
-	@Parameter(name = "Diagrammpunkte", unit = "Punkte")
+	@Parameter(name = "XY-Diagrammpunkte", unit = "Punkte")
 	@IntegerParameter(min = 1)
-	public IntegerProperty samplesProperty() {
-		return samples;
+	public IntegerProperty xySamplesProperty() {
+		return xySamples;
+	}
+	
+	// Samples
+	
+	private IntegerProperty yzSamples = new SimpleIntegerProperty(200);
+	
+	public int getYZSamples() {
+		return yzSamples.get();
+	}
+	public void setYZSamples(int yzSamples) {
+		this.yzSamples.set(yzSamples);
+	}
+	@Parameter(name = "YZ-Diagrammpunkte", unit = "Punkte")
+	@IntegerParameter(min = 1)
+	public IntegerProperty yzSamplesProperty() {
+		return yzSamples;
+	}
+	
+	// Samples
+	
+	private IntegerProperty xzSamples = new SimpleIntegerProperty(200);
+	
+	public int getXZSamples() {
+		return xzSamples.get();
+	}
+	public void setXZSamples(int xzSamples) {
+		this.xzSamples.set(xzSamples);
+	}
+	@Parameter(name = "XZ-Diagrammpunkte", unit = "Punkte")
+	@IntegerParameter(min = 1)
+	public IntegerProperty xzSamplesProperty() {
+		return xzSamples;
 	}
 
 }
