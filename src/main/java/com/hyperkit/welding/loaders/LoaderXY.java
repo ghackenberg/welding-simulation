@@ -18,7 +18,7 @@ public class LoaderXY extends Loader2D<RendererXY> {
 	private double z;
 
 	public LoaderXY(JFrame frame, JProgressBar progress_bar, RendererXY render, ChartPanel chart_panel, Range min_x, Range max_x, double z) {
-		super(frame, progress_bar, render, chart_panel, "XZ-Schweiﬂprofil", "L‰nge", "Tiefe");
+		super(frame, progress_bar, render, chart_panel, "XY-Schweiﬂprofil", "L‰nge [x]", "Breite [y]");
 		
 		this.min_x = min_x;
 		this.max_x = max_x;
@@ -32,7 +32,7 @@ public class LoaderXY extends Loader2D<RendererXY> {
 	
 	@Override
 	protected String getAnnotation() {
-		return "z = " + z;
+		return "z = " + FORMAT.format(z * 10) + " mm";
 	}
 
 }

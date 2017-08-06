@@ -188,11 +188,12 @@ public class Main {
 						try {
 							Range min_x = search.findMinimumX(0, 0);
 							Range max_x = search.findMaximumX(0, 0);
+							double opt_x = search.findOptimumX(min_x, max_x);
 							
 							// TODO find optimum x!
 							
 							new LoaderXY(frame, progress_bar, render_xy, chart_xy_panel, min_x, max_x, 0).run();
-							new LoaderYZ(frame, progress_bar, render_yz, chart_yz_panel, 0).run();
+							new LoaderYZ(frame, progress_bar, render_yz, chart_yz_panel, opt_x).run();
 							new LoaderXZ(frame, progress_bar, render_xz, chart_xz_panel, min_x, max_x, 0).run();
 							
 							canvas.display();

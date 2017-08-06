@@ -558,4 +558,51 @@ public class Search {
 		return new Range(lower_x, upper_x);
 	}
 	
+	public double findOptimumX(Range min_x, Range max_x) throws SearchException {
+		
+		double last_x = min_x.getUpperValue();
+		double last_width = Math.abs(findMaximumY(last_x, 0).getLowerValue());
+		
+		double step_size = (max_x.getUpperValue() - min_x.getUpperValue()) / 10.0;
+		
+		double next_width;
+		
+		long outer_timestamp = System.currentTimeMillis();
+		
+		while (step_size >= 0.000000001) {
+			
+			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+				throw new SearchException("Problem 1");
+			}
+			
+			long inner_timestamp = System.currentTimeMillis();
+			
+			while ((next_width = Math.abs(findMaximumY(last_x + step_size, 0).getLowerValue())) > last_width) {
+				
+				if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					throw new SearchException("Problem 2");
+				}
+				
+				last_x += step_size;
+				last_width = next_width;
+			}
+			
+			inner_timestamp = System.currentTimeMillis();
+			
+			while ((next_width = Math.abs(findMaximumY(last_x - step_size, 0).getLowerValue())) > last_width) {
+				
+				if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					throw new SearchException("Problem 2");
+				}
+				
+				last_x -= step_size;
+				last_width = next_width;
+			}
+			step_size /= 2.0;
+		}
+		
+		return last_x;
+		
+	}
+	
 }
