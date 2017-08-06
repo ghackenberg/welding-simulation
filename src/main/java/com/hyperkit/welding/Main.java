@@ -14,26 +14,23 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import org.jfree.chart.ChartPanel;
+import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.configurations.ModelConfiguration;
 import com.hyperkit.welding.configurations.Render2DConfiguration;
 import com.hyperkit.welding.configurations.Render3DConfiguration;
 import com.hyperkit.welding.configurations.SearchConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
-import com.hyperkit.welding.loaders.LoaderXY;
-import com.hyperkit.welding.loaders.LoaderXZ;
-import com.hyperkit.welding.loaders.LoaderYZ;
+import com.hyperkit.welding.generators.GeneratorXY;
+import com.hyperkit.welding.generators.GeneratorXZ;
+import com.hyperkit.welding.generators.GeneratorYZ;
 import com.hyperkit.welding.renderers.Renderer3D;
 import com.hyperkit.welding.renderers.RendererXY;
 import com.hyperkit.welding.renderers.RendererXZ;
 import com.hyperkit.welding.renderers.RendererYZ;
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.glu.GLU;
 
 public class Main {
 
@@ -51,36 +48,53 @@ public class Main {
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
+		
+		// Create datasets
+		
+		XYSeriesCollection dataset_xy = new XYSeriesCollection();
+		XYSeriesCollection dataset_xz = new XYSeriesCollection();
+		XYSeriesCollection dataset_yz = new XYSeriesCollection();
 
 		// Create model
 
 		ModelConfiguration model_configuration = new ModelConfiguration();
+		
 		Model model = new Model(model_configuration);
 
 		// Create search
 
 		SearchConfiguration search_configuration = new SearchConfiguration();
+		
 		Search search = new Search(model, search_configuration);
 
-		// Create render
+		// Create generators
 
 		Render2DConfiguration render_2d_configuration = new Render2DConfiguration();
+
+		GeneratorXY generator_xy = new GeneratorXY(search, render_2d_configuration);
+		GeneratorYZ generator_yz = new GeneratorYZ(search, render_2d_configuration);
+		GeneratorXZ generator_xz = new GeneratorXZ(search, render_2d_configuration);
+		
+		// Create renderers
+		
 		Render3DConfiguration render_3d_configuration = new Render3DConfiguration();
+		
+		Renderer3D render_3d = new Renderer3D(search, render_3d_configuration);
 
-		RendererXY render_xy = new RendererXY(search, render_2d_configuration);
-		RendererYZ render_yz = new RendererYZ(search, render_2d_configuration);
-		RendererXZ render_xz = new RendererXZ(search, render_2d_configuration);
-
-		// Create panel
+		// Create panels
 
 		ChartPanel chart_xy_panel = new ChartPanel(null);
 		ChartPanel chart_yz_panel = new ChartPanel(null);
 		ChartPanel chart_xz_panel = new ChartPanel(null);
+		
 		GLProfile profile = GLProfile.getDefault();
 		GLCapabilities capabilities = new GLCapabilities(profile);
 		GLCanvas canvas = new GLCanvas(capabilities);
 
-		// Create progressbar
+		Listener listener = new Listener(dataset_xy, dataset_xz, dataset_yz, render_3d);
+		canvas.addGLEventListener(listener);
+
+		// Create progress bar
 
 		final JProgressBar progress_bar = new JProgressBar();
 
@@ -141,43 +155,6 @@ public class Main {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// Create button action listener
-		
-		canvas.addGLEventListener(new GLEventListener() {
-			
-			private GLU glu;
-			private int width;
-			private int height;
-
-			@Override
-			public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-				GL gl = drawable.getGL();
-				gl.glViewport(0, 0, width, height);
-				this.width = width;
-				this.height = height;
-			}
-			@Override
-			public void init(GLAutoDrawable drawable) {
-				glu = new GLU();
-			}
-			@Override
-			public void dispose(GLAutoDrawable drawable) {
-
-			}
-			@Override
-			public void display(GLAutoDrawable drawable) {
-				new Renderer3D(search, render_3d_configuration).render(width, height, drawable, glu, new Progress() {
-					@Override
-					public void update(int current, int total) {
-						progress_bar.setValue(current);
-						progress_bar.setString(current + " / " + total + " Datenpunkte");
-					}
-					@Override
-					public void initialize(int total) {
-						progress_bar.setMaximum(total);
-					}
-				});
-			}
-		});
 
 		button.addActionListener(new ActionListener() {
 			@Override
@@ -186,17 +163,42 @@ public class Main {
 					@Override
 					public void run() {
 						try {
+							
+							dataset_xy.removeAllSeries();
+							dataset_xz.removeAllSeries();
+							dataset_yz.removeAllSeries();
+							
+							canvas.display();
+							
 							Range min_x = search.findMinimumX(0, 0);
 							Range max_x = search.findMaximumX(0, 0);
 							double opt_x = search.findOptimumX(min_x, max_x);
 							
-							// TODO find optimum x!
+							listener.setOptX(opt_x);
 							
-							new LoaderXY(frame, progress_bar, render_xy, chart_xy_panel, min_x, max_x, 0).run();
-							new LoaderYZ(frame, progress_bar, render_yz, chart_yz_panel, opt_x).run();
-							new LoaderXZ(frame, progress_bar, render_xz, chart_xz_panel, min_x, max_x, 0).run();
+							Progress progress = new Progress() {
+								@Override
+								public void initialize(int total) {
+									progress_bar.setMaximum(total);
+									progress_bar.setValue(0);
+								}
+								@Override
+								public void update(int current, int total) {
+									progress_bar.setString(current + " / " + total + " Diagrammpunkte");
+									progress_bar.setValue(current);
+								}
+							};
+							
+							generator_xy.generateDataset(min_x, max_x, 0, dataset_xy, progress);
+							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz, progress);
+							generator_yz.generateDataset(opt_x, dataset_yz, progress);
+							
+							new RendererXY(chart_xy_panel, 0).run(dataset_xy);
+							new RendererXZ(chart_xz_panel, 0).run(dataset_xz);
+							new RendererYZ(chart_yz_panel, opt_x).run(dataset_yz);
 							
 							canvas.display();
+							
 						} catch (SearchException e) {
 							
 							JOptionPane.showMessageDialog(frame, "Das Schweiﬂprofil konnte nicht berechnet werden. Passen sie die Parametereinstellungen an.", "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);

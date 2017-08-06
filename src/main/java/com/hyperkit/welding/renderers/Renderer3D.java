@@ -1,8 +1,12 @@
 package com.hyperkit.welding.renderers;
 
-import com.hyperkit.welding.Progress;
 import com.hyperkit.welding.Range;
-import com.hyperkit.welding.Renderer;
+
+import org.jfree.data.xy.XYDataItem;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+import com.hyperkit.welding.Generator;
 import com.hyperkit.welding.Search;
 import com.hyperkit.welding.configurations.Render3DConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
@@ -10,8 +14,9 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUquadric;
 
-public class Renderer3D extends Renderer {
+public class Renderer3D extends Generator {
 	
 	private Search search;
 	private Render3DConfiguration configuration;
@@ -21,7 +26,7 @@ public class Renderer3D extends Renderer {
 		this.configuration = configuration;
 	}
 
-	public void render(int width, int height, GLAutoDrawable drawable, GLU glu, Progress progress) {
+	public void render(double opt_x, XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz, int width, int height, GLAutoDrawable drawable, GLU glu) {
 
 		try {
 
@@ -30,6 +35,12 @@ public class Renderer3D extends Renderer {
 			GL2 gl = (GL2) drawable.getGL();
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+			
+			// Check datasets
+			
+			if (dataset_xy.getSeries().size() != 2 || dataset_xz.getSeries().size() != 2 || dataset_yz.getSeries().size() != 2) {
+				return;
+			}
 
 			// Find ranges
 
@@ -75,8 +86,6 @@ public class Renderer3D extends Renderer {
 			double min = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
 			double max = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
 
-			int total = 0;
-
 			for (double x = -Math.abs(range_x.getLowerValue()); x <= Math.abs(range_x.getLowerValue()); x += points_step) {
 				// for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step)
 				// {
@@ -84,16 +93,10 @@ public class Renderer3D extends Renderer {
 					double temperature = search.getModel().calculateTemperature(x, 0, z);
 					if (temperature >= search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold()) {
 						max = Math.max(max, temperature);
-						total++;
 					}
 				}
 				// }
 			}
-
-			progress.initialize(total);
-			progress.update(0, total);
-
-			int count = 0;
 
 			for (double x = -Math.abs(range_x.getLowerValue()) * 2; x <= Math.abs(range_x.getLowerValue()) * 2; x += points_step) {
 				// for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step)
@@ -104,16 +107,178 @@ public class Renderer3D extends Renderer {
 					if (temperature >= search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold()) {
 						gl.glColor3d(Math.sqrt((temperature - min) / (max - min)), 0, Math.sqrt(1 - (temperature - min) / (max - min)));
 						gl.glVertex3d(x, 0, z);
-
-						count++;
-
-						progress.update(count, total);
 					}
 				}
 				// }
 			}
 
 			gl.glEnd();
+			
+			// Render datasets
+			
+			XYDataItem previous;
+			
+			GLUquadric quadirc = glu.gluNewQuadric();
+			
+			for (Object series_object : dataset_xy.getSeries()) {
+				if (series_object instanceof XYSeries) {
+					gl.glBegin(GL2.GL_LINES);
+					gl.glLineWidth(3);
+					gl.glColor3f(0,0,0);
+					
+					XYSeries series = (XYSeries) series_object;
+					
+					previous = null;
+					
+					for (Object item_object : series.getItems()) {
+						if (item_object instanceof XYDataItem) {
+							XYDataItem item = (XYDataItem) item_object;
+							
+							if (previous != null) {
+								gl.glVertex3d(previous.getXValue() / 10, 0, previous.getYValue() / 10);
+								gl.glVertex3d(item.getXValue() / 10, 0, item.getYValue() / 10);
+							}
+							
+							previous = item;
+						} else {
+							throw new IllegalStateException();
+						}
+					}
+					
+					previous = null;
+					
+					for (Object item_object : series.getItems()) {
+						if (item_object instanceof XYDataItem) {
+							XYDataItem item = (XYDataItem) item_object;
+							
+							if (previous != null) {
+								gl.glVertex3d(previous.getXValue() / 10, 0, -previous.getYValue()/ 10);
+								gl.glVertex3d(item.getXValue() / 10, 0, -item.getYValue() / 10);
+							}
+							
+							previous = item;
+						} else {
+							throw new IllegalStateException();
+						}
+					}
+					
+					gl.glEnd();
+					
+					XYDataItem first = (XYDataItem) series.getItems().get(0);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0.5, 0);
+					gl.glTranslated(first.getXValue() / 10, 0, first.getYValue() / 10);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+					
+					XYDataItem last = (XYDataItem) series.getItems().get(series.getItemCount() - 1);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0.5, 0);
+					gl.glTranslated(last.getXValue() / 10, 0, last.getYValue() / 10);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+				} else {
+					throw new IllegalStateException();
+				}
+			}
+			
+			for (Object series_object : dataset_xz.getSeries()) {
+				if (series_object instanceof XYSeries) {
+					gl.glBegin(GL2.GL_LINES);
+					gl.glLineWidth(3);
+					gl.glColor3f(0,0,0);
+					
+					XYSeries series = (XYSeries) series_object;
+					
+					previous = null;
+					
+					for (Object item_object : series.getItems()) {
+						if (item_object instanceof XYDataItem) {
+							XYDataItem item = (XYDataItem) item_object;
+							
+							if (previous != null) {
+								gl.glVertex3d(previous.getXValue() / 10, previous.getYValue() / 10, 0);
+								gl.glVertex3d(item.getXValue() / 10, item.getYValue() / 10, 0);
+							}
+							
+							previous = item;
+						} else {
+							throw new IllegalStateException();
+						}
+					}
+					
+					gl.glEnd();
+					
+					XYDataItem first = (XYDataItem) series.getItems().get(0);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0.5, 0);
+					gl.glTranslated(first.getXValue() / 10, first.getYValue() / 10, 0);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+					
+					XYDataItem last = (XYDataItem) series.getItems().get(series.getItemCount() - 1);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0.5, 0);
+					gl.glTranslated(last.getXValue() / 10, last.getYValue() / 10, 0);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+				} else {
+					throw new IllegalStateException();
+				}
+			}
+			
+			for (Object series_object : dataset_yz.getSeries()) {
+				if (series_object instanceof XYSeries) {
+					gl.glBegin(GL2.GL_LINES);
+					gl.glLineWidth(3);
+					gl.glColor3f(0,0,0);
+					
+					XYSeries series = (XYSeries) series_object;
+					
+					previous = null;
+					
+					for (Object item_object : series.getItems()) {
+						if (item_object instanceof XYDataItem) {
+							XYDataItem item = (XYDataItem) item_object;
+							
+							if (previous != null) {
+								gl.glVertex3d(opt_x, previous.getYValue() / 10, previous.getXValue() / 10);
+								gl.glVertex3d(opt_x, item.getYValue() / 10, item.getXValue() / 10);
+							}
+							
+							previous = item;
+						} else {
+							throw new IllegalStateException();
+						}
+					}
+					
+					gl.glEnd();
+					
+					XYDataItem first = (XYDataItem) series.getItems().get(0);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0.5, 0);
+					gl.glTranslated(opt_x, first.getYValue() / 10, first.getXValue() / 10);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+					
+					XYDataItem last = (XYDataItem) series.getItems().get(series.getItemCount() - 1);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0.5, 0);
+					gl.glTranslated(opt_x, last.getYValue() / 10, last.getXValue() / 10);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+				} else {
+					throw new IllegalStateException();
+				}
+			}
+			
+			glu.gluDeleteQuadric(quadirc);
 
 			// Render grid
 
