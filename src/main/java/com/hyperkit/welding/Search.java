@@ -5,10 +5,6 @@ import com.hyperkit.welding.exceptions.SearchException;
 
 public class Search {
 	
-	// Limit the number of iterations
-	private static final long OUTER_LIMIT = 10000;
-	private static final long INNER_LIMIT = 100;
-	
 	private Model model;
 	private SearchConfiguration configuration;
 	
@@ -53,7 +49,7 @@ public class Search {
 				throw new SearchException("Problem: x = " + x + ", lower_y = " + lower_y + ", upper_y = " + upper_y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
-			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Problem 1: x = " + x + ", y = " + lower_y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
@@ -67,7 +63,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 2: x = " + x + ", y = " + lower_y + ", z = " + z + ", step_size = " + step_size + ", lower_temperature = " + lower_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -91,7 +87,7 @@ public class Search {
 				
 				while (lower_y + step_size <= 0 && (next_temperature = model.calculateTemperature(x, lower_y + step_size, z)) < limit_temperature) {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 3: x = " + x + ", y = " + lower_y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -112,7 +108,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 4: x = " + x + ", y = " + lower_y + ", z = " + z + ", step_size = " + step_size + ", upper_temperature = " + upper_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -135,7 +131,7 @@ public class Search {
 				
 				while ((next_temperature = model.calculateTemperature(x, upper_y - step_size, z)) > limit_temperature) {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 5: x = " + x + ", y = " + lower_y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -186,7 +182,7 @@ public class Search {
 				throw new SearchException("Problem: x = " + x + ", y = " + y + ", lower_z = " + lower_z + ", upper_z = " + upper_z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
-			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Problem 6: x = " + x + ", y = " + y + ", z = " + lower_z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
@@ -200,7 +196,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 7: x = " + x + ", y = " + y + ", z = " + lower_z + ", step_size = " + step_size + ", lower_temperature = " + lower_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -225,7 +221,7 @@ public class Search {
 				while (lower_z + step_size <= 0 && (next_temperature = model.calculateTemperature(x, y, lower_z + step_size)) < limit_temperature) {
 					// Check the iteration number
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 8: x = " + x + ", y = " + y + ", z = " + lower_z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -246,7 +242,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 9: x = " + x + ", y = " + y + ", z = " + lower_z + ", step_size = " + step_size + ", upper_temperature = " + upper_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -269,7 +265,7 @@ public class Search {
 				
 				while ((next_temperature = model.calculateTemperature(x, y, upper_z - step_size)) > limit_temperature) {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 10: x = " + x + ", y = " + y + ", z = " + lower_z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -318,7 +314,7 @@ public class Search {
 				throw new SearchException("Problem: lower_x = " + lower_x + ", upper_x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
-			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Problem 6: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
@@ -332,7 +328,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 7: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", lower_temperature = " + lower_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -357,7 +353,7 @@ public class Search {
 				while (lower_x + step_size <= 0 && (next_temperature = model.calculateTemperature(lower_x + step_size, y, z)) < limit_temperature) {
 					// Check the iteration number
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 8: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -378,7 +374,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 9: x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", upper_temperature = " + upper_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -401,7 +397,7 @@ public class Search {
 				
 				while ((next_temperature = model.calculateTemperature(upper_x - step_size, y, z)) > limit_temperature) {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 10: x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -450,7 +446,7 @@ public class Search {
 				throw new SearchException("Problem: lower_x = " + lower_x + ", upper x = " + upper_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
-			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Problem 6: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", limit_tempature = " + limit_temperature + ", lower_temperature = " + lower_temperature + ", upper_temperature = " + upper_temperature);
 			}
 			
@@ -464,7 +460,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 7: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", lower_temperature = " + lower_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -489,7 +485,7 @@ public class Search {
 				while (lower_x - step_size >= 0 && (next_temperature = model.calculateTemperature(lower_x - step_size, y, z)) < limit_temperature) {
 					// Check the iteration number
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 8: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -510,7 +506,7 @@ public class Search {
 				
 				do {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 9: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", upper_temperature = " + upper_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -533,7 +529,7 @@ public class Search {
 				
 				while ((next_temperature = model.calculateTemperature(upper_x + step_size, y, z)) > limit_temperature) {
 					
-					if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 						throw new SearchException("Problem 10: x = " + lower_x + ", y = " + y + ", z = " + z + ", step_size = " + step_size + ", next_temperature = " + next_temperature + ", limit_tempature = " + limit_temperature);
 					}
 					
@@ -567,7 +563,7 @@ public class Search {
 		
 		while (step_size >= 0.000000001) {
 			
-			if (System.currentTimeMillis() - outer_timestamp > OUTER_LIMIT) {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Problem 1");
 			}
 			
@@ -575,7 +571,7 @@ public class Search {
 			
 			while ((next_width = Math.abs(findMaximumY(last_x + step_size, 0).getLowerValue())) > last_width) {
 				
-				if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+				if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 					throw new SearchException("Problem 2");
 				}
 				
@@ -587,7 +583,7 @@ public class Search {
 			
 			while ((next_width = Math.abs(findMaximumY(last_x - step_size, 0).getLowerValue())) > last_width) {
 				
-				if (System.currentTimeMillis() - inner_timestamp > INNER_LIMIT) {
+				if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
 					throw new SearchException("Problem 2");
 				}
 				

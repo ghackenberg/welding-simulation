@@ -29,10 +29,12 @@ import javax.swing.event.ChangeListener;
 
 import com.hyperkit.welding.annotations.DoubleParameter;
 import com.hyperkit.welding.annotations.IntegerParameter;
+import com.hyperkit.welding.annotations.LongParameter;
 import com.hyperkit.welding.annotations.Parameter;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.Property;
 
 public class Configurator {
@@ -139,6 +141,72 @@ public class Configurator {
 						
 						constraints.gridx = 3;
 						panel.add(createLimitLabel(max == Integer.MAX_VALUE ? "k.A." : FORMAT.format(max), Color.BLACK, GRAY_2), constraints);
+					} else if (property instanceof LongProperty) {
+						LongParameter long_parameter = method.getAnnotation(LongParameter.class);
+						
+						long value = (long) property.getValue();
+						long min = long_parameter.min();
+						long max = long_parameter.max();
+						/*
+						long step = long_parameter.step();
+						*/
+						
+						JTextField field = new JTextField(FORMAT.format(value));
+						
+						field.setHorizontalAlignment(JTextField.RIGHT);
+						field.addFocusListener(new FocusListener() {
+							@Override
+							public void focusLost(FocusEvent event) {
+								long value;
+								try {
+									value = FORMAT.parse(field.getText()).longValue();
+								} catch (ParseException exception) {
+									value = min;
+								}
+								if (value < min) {
+									value = min;
+								}
+								if (value > max) {
+									value = max;
+								}
+								((LongProperty) property).set(value);
+								field.setText(FORMAT.format(value));
+							}
+							@Override
+							public void focusGained(FocusEvent event) {
+								// Ignore
+							}
+						});
+						field.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent event) {
+								long value;
+								try {
+									value = FORMAT.parse(field.getText()).longValue();
+								} catch (ParseException exception) {
+									value = min;
+								}
+								if (value < min) {
+									value = min;
+								}
+								if (value > max) {
+									value = max;
+								}
+								((LongProperty) property).set(value);
+								field.setText(FORMAT.format(value));
+							}
+						});
+	
+						//updateStyle(field, Color.BLACK, GRAY_2);
+
+						constraints.gridx = 1;
+						panel.add(field, constraints);
+						
+						constraints.gridx = 2;
+						panel.add(createLimitLabel(min == Long.MIN_VALUE ? "k.A." : FORMAT.format(min), Color.BLACK, GRAY_2), constraints);
+						
+						constraints.gridx = 3;
+						panel.add(createLimitLabel(max == Long.MAX_VALUE ? "k.A." : FORMAT.format(max), Color.BLACK, GRAY_2), constraints);
 					} else if (property instanceof DoubleProperty) {
 						DoubleParameter double_parameter = method.getAnnotation(DoubleParameter.class);
 						

@@ -2,10 +2,13 @@ package com.hyperkit.welding.configurations;
 
 import com.hyperkit.welding.Configuration;
 import com.hyperkit.welding.annotations.DoubleParameter;
+import com.hyperkit.welding.annotations.LongParameter;
 import com.hyperkit.welding.annotations.Parameter;
 
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleLongProperty;
 
 public class SearchConfiguration extends Configuration {
 	
@@ -57,8 +60,40 @@ public class SearchConfiguration extends Configuration {
 	}
 	@Parameter(name = "Initiale Schrittweite", unit = "mm")
 	@DoubleParameter(min = 0)
-	public DoubleProperty initial_step_sizeProperty() {
+	public DoubleProperty initialStepSizeProperty() {
 		return initial_step_size;
+	}
+	
+	// Inneres Zeitfenster
+
+	private LongProperty inner_limit = new SimpleLongProperty(1000);
+	
+	public double getInnerLimit() {
+		return inner_limit.get();
+	}
+	public void setInnerLimit(long inner_limit) {
+		this.inner_limit.set(inner_limit);
+	}
+	@Parameter(name = "Inneres Zeitfenster", unit = "ms")
+	@LongParameter(min = 1)
+	public LongProperty innerLimitProperty() {
+		return inner_limit;
+	}
+	
+	// Äußeres Zeitfenster
+
+	private LongProperty outer_limit = new SimpleLongProperty(1000000);
+	
+	public double getOuterLimit() {
+		return outer_limit.get();
+	}
+	public void setOuterLimit(long outer_limit) {
+		this.outer_limit.set(outer_limit);
+	}
+	@Parameter(name = "Äußeres Zeitfenster", unit = "ms")
+	@LongParameter(min = 1)
+	public LongProperty outerLimitProperty() {
+		return outer_limit;
 	}
 	
 }
