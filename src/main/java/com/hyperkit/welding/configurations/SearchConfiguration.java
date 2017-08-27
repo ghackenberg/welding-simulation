@@ -45,4 +45,20 @@ public class SearchConfiguration extends Configuration {
 		return temperature_threshold;
 	}
 	
+	// Initial step size
+
+	private DoubleProperty initial_step_size = new SimpleDoubleProperty(1);
+	
+	public double getInitialStepSize() {
+		return initial_step_size.get();
+	}
+	public void setInitialStepSize(double initial_step_size) {
+		this.initial_step_size.set(initial_step_size);
+	}
+	@Parameter(name = "Initiale Schrittweite", unit = "mm")
+	@DoubleParameter(min = 0)
+	public DoubleProperty initial_step_sizeProperty() {
+		return initial_step_size;
+	}
+	
 }

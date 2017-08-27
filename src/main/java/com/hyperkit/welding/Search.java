@@ -34,9 +34,8 @@ public class Search {
 		// Initialize the search variables
 		
 		double limit_temperature = configuration.getLimitTemperature();
-		double temperature_threshold = 0.001; //configuration.getTemperatureThershold();
-		
-		double step_size = model.getConfiguration().getDiameter() / 2.0;
+		double temperature_threshold = configuration.getTemperatureThershold();
+		double step_size = configuration.getInitialStepSize();
 		
 		double lower_y = 0;
 		double upper_y = 0;
@@ -169,8 +168,7 @@ public class Search {
 		
 		double limit_temperature = configuration.getLimitTemperature();
 		double temperature_threshold = configuration.getTemperatureThershold();
-		
-		double step_size = model.getConfiguration().getDiameter() / 2.0;
+		double step_size = configuration.getInitialStepSize();
 		
 		double lower_z = 0;
 		double upper_z = 0;
@@ -302,8 +300,7 @@ public class Search {
 		
 		double limit_temperature = configuration.getLimitTemperature();
 		double temperature_threshold = configuration.getTemperatureThershold();
-		
-		double step_size = model.getConfiguration().getDiameter() / 2.0;
+		double step_size = configuration.getInitialStepSize();
 		
 		double lower_x = 0;
 		double upper_x = 0;
@@ -435,8 +432,7 @@ public class Search {
 		
 		double limit_temperature = configuration.getLimitTemperature();
 		double temperature_threshold = configuration.getTemperatureThershold();
-		
-		double step_size = model.getConfiguration().getDiameter() / 2.0;
+		double step_size = configuration.getInitialStepSize();
 		
 		double lower_x = 0;
 		double upper_x = 0;
