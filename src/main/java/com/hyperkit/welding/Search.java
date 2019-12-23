@@ -5,15 +5,15 @@ import com.hyperkit.welding.exceptions.SearchException;
 
 public class Search {
 	
-	private Model model;
+	private Model<?> model;
 	private SearchConfiguration configuration;
 	
-	public Search(Model model, SearchConfiguration configuration) {
+	public Search(Model<?> model, SearchConfiguration configuration) {
 		this.model = model;
 		this.configuration = configuration;
 	}
 	
-	public Model getModel() {
+	public Model<?> getModel() {
 		return model;
 	}
 	

@@ -32,9 +32,9 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 
-public class Main {
+public abstract class Program<S extends ModelConfiguration, T extends Model<S>> {
 
-	public static void main(String[] args) {
+	public void run(String[] args) {
 		// Look and feel
 
 		try {
@@ -57,9 +57,9 @@ public class Main {
 
 		// Create model
 
-		ModelConfiguration model_configuration = new ModelConfiguration();
+		S model_configuration = getModelConfiguration();
 		
-		Model model = new Model(model_configuration);
+		T model = getModel(model_configuration);
 
 		// Create search
 
@@ -211,5 +211,9 @@ public class Main {
 			}
 		});
 	}
+	
+	protected abstract S getModelConfiguration();
+	
+	protected abstract T getModel(S configuration);
 
 }
