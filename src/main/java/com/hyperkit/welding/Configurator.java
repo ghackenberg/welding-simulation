@@ -115,7 +115,7 @@ public class Configurator {
 					if (property instanceof IntegerProperty) {
 						IntegerParameter integer_parameter = method.getAnnotation(IntegerParameter.class);
 	
-						int value = (int) property.getValue();
+						int value = (Integer) property.getValue();
 						int min = integer_parameter.min();
 						int max = integer_parameter.max();
 						int step = integer_parameter.step();
@@ -144,7 +144,7 @@ public class Configurator {
 					} else if (property instanceof LongProperty) {
 						LongParameter long_parameter = method.getAnnotation(LongParameter.class);
 						
-						long value = (long) property.getValue();
+						long value = (Long) property.getValue();
 						long min = long_parameter.min();
 						long max = long_parameter.max();
 						/*
@@ -210,7 +210,7 @@ public class Configurator {
 					} else if (property instanceof DoubleProperty) {
 						DoubleParameter double_parameter = method.getAnnotation(DoubleParameter.class);
 						
-						double value = (double) property.getValue();
+						double value = (Double) property.getValue();
 						double min = double_parameter.min();
 						double max = double_parameter.max();
 						/*
