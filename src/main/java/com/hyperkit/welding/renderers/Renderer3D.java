@@ -46,7 +46,7 @@ public class Renderer3D extends Generator {
 
 			Range range_x = search.findMaximumX(0, 0);
 			// Range range_y = search.findMaximumY(0, 0);
-			Range range_z = search.findMaximumZ(0, 0);
+			Range range_z = search.findMaximumZ(opt_x, 0);
 
 			// Change to projection matrix
 
@@ -59,13 +59,15 @@ public class Renderer3D extends Generator {
 			double camera_y = configuration.getCameraY();
 			double camera_z = configuration.getCameraZ();
 
+			/*
 			double eye_x = configuration.getEyeX();
 			double eye_y = configuration.getEyeY();
 			double eye_z = configuration.getEyeZ();
+			*/
 
 			float widthHeightRatio = (float) width / (float) height;
 			glu.gluPerspective(45, widthHeightRatio, 0.001, 1000);
-			glu.gluLookAt(camera_x, camera_y, camera_z, eye_x, eye_y, eye_z, 0, 1, 0);
+			glu.gluLookAt(camera_x, camera_y, camera_z, opt_x, range_z.getLowerValue() / 2, 0, 0, 1, 0);
 
 			// Change back to model view matrix
 
@@ -91,6 +93,7 @@ public class Renderer3D extends Generator {
 				// {
 				for (double z = -Math.abs(range_z.getLowerValue()); z <= Math.abs(range_z.getLowerValue()); z += points_step) {
 					double temperature = search.getModel().calculateTemperature(x, 0, z);
+					
 					if (temperature >= search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold()) {
 						max = Math.max(max, temperature);
 					}

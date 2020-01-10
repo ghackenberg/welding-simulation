@@ -64,6 +64,7 @@ public class Render3DConfiguration extends Configuration {
 		return camera_z;
 	}
 	
+	/*
 	// Eye X
 	
 	private DoubleProperty eye_x = new SimpleDoubleProperty(0);
@@ -111,6 +112,7 @@ public class Render3DConfiguration extends Configuration {
 	public DoubleProperty eyeZProperty() {
 		return eye_z;
 	}
+	*/
 	
 	// Samples
 	

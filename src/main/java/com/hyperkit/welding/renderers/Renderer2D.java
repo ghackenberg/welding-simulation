@@ -3,7 +3,10 @@ package com.hyperkit.welding.renderers;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Integrator;
@@ -36,6 +39,37 @@ public abstract class Renderer2D extends Renderer {
 		// Create chart
 
 		JFreeChart chart = ChartFactory.createXYLineChart(name + " (Fläche = " + FORMAT.format(lower_area) + " bis " + FORMAT.format(upper_area) + " mm², " + getAnnotation() + ")",  x_axis + " (in mm)", y_axis + " (in mm)", dataset, PlotOrientation.VERTICAL, true, true, false);
+
+		// Get plot
+
+		XYPlot plot = chart.getXYPlot();
+		
+		// Get axes
+		
+		ValueAxis domain = plot.getDomainAxis();
+		ValueAxis range = plot.getRangeAxis();
+		
+		// Add markers
+		
+		plot.addDomainMarker(new ValueMarker(0));
+		plot.addRangeMarker(new ValueMarker(0));
+		
+		// Synchronize axes
+		
+		double domainInterval = domain.getUpperBound() - domain.getLowerBound();
+		double rangeInterval = range.getUpperBound() - range.getLowerBound();
+		
+		if (domainInterval > rangeInterval) {
+			double difference = domainInterval - rangeInterval;
+			
+			range.setLowerBound(range.getLowerBound() - difference / 2);
+			range.setUpperBound(range.getUpperBound() + difference / 2);
+		} else {
+			double difference = rangeInterval - domainInterval;
+			
+			domain.setLowerBound(domain.getLowerBound() - difference / 2);
+			domain.setUpperBound(domain.getUpperBound() + difference / 2);
+		}
 
 		// Update panel
 
