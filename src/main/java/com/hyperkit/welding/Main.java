@@ -1,5 +1,7 @@
 package com.hyperkit.welding;
 
+import javax.swing.JOptionPane;
+
 import com.hyperkit.welding.programs.CircularProgram;
 import com.hyperkit.welding.programs.LinearProgram;
 
@@ -7,17 +9,18 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		if (args.length != 1) {
-			System.err.println("Exactly one argument required");
+		String[] options = {"Linearpendel", "Kreispendel"};
+		
+		int choice = JOptionPane.showOptionDialog(null, "Bitte wählen Sie das gewünschte Modell aus", "Modellauswahl", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+		
+		if (choice == 0) {
+			LinearProgram.main(args);
+		} else if (choice == 1) {
+			CircularProgram.main(args);
 		} else {
-			if (args[0].equals("linear")) {
-				LinearProgram.main(args);
-			} else if (args[0].equals("circular")) {
-				CircularProgram.main(args);
-			} else {
-				System.err.println("Unknown program mode");
-			}
+			JOptionPane.showMessageDialog(null, "Das ausgewählt Modell wird nicht unterstützt");
 		}
+		
 	}
 	
 }
