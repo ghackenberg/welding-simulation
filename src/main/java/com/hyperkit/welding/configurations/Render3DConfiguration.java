@@ -18,7 +18,7 @@ public class Render3DConfiguration extends Configuration {
 	
 	// Camera X
 	
-	private DoubleProperty camera_x = new SimpleDoubleProperty(-1);
+	private DoubleProperty camera_x = new SimpleDoubleProperty(-1.5);
 	
 	public double getCameraX() {
 		return camera_x.get();
@@ -50,7 +50,7 @@ public class Render3DConfiguration extends Configuration {
 	
 	// Camera Z
 	
-	private DoubleProperty camera_z = new SimpleDoubleProperty(-1);
+	private DoubleProperty camera_z = new SimpleDoubleProperty(2);
 	
 	public double getCameraZ() {
 		return camera_z.get();
@@ -59,7 +59,7 @@ public class Render3DConfiguration extends Configuration {
 		this.camera_z.set(samples);
 	}
 	@Parameter(name = "Kamera Z-Position", unit = "mm")
-	@DoubleParameter(min = -10, max = 0, step = 0.1)
+	@DoubleParameter(min = -10, max = 10, step = 0.1)
 	public DoubleProperty cameraZProperty() {
 		return camera_z;
 	}
@@ -116,7 +116,7 @@ public class Render3DConfiguration extends Configuration {
 	
 	// Samples
 	
-	private DoubleProperty samples = new SimpleDoubleProperty(0.1);
+	private DoubleProperty samples = new SimpleDoubleProperty(0.025);
 	
 	public double getSamples() {
 		return samples.get();

@@ -1,5 +1,8 @@
 package com.hyperkit.welding.renderers;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -10,6 +13,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Integrator;
+import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Renderer;
 
 public abstract class Renderer2D extends Renderer {
@@ -28,7 +32,7 @@ public abstract class Renderer2D extends Renderer {
 	
 	protected abstract String getAnnotation();
 	
-	public void run(XYSeriesCollection dataset) {
+	public void run(Range min_x, Range max_x, XYSeriesCollection dataset) {
 		
 		double upper_area = Integrator.calculateArea(dataset.getSeries(0));
 		double lower_area = Integrator.calculateArea(dataset.getSeries(1));
@@ -51,25 +55,38 @@ public abstract class Renderer2D extends Renderer {
 		
 		// Add markers
 		
-		plot.addDomainMarker(new ValueMarker(0));
-		plot.addRangeMarker(new ValueMarker(0));
+		plot.addDomainMarker(new ValueMarker(0, Color.BLACK, new BasicStroke()));
+		plot.addRangeMarker(new ValueMarker(0, Color.BLACK, new BasicStroke()));
+		
+		// Set paint
+		
+		if (dataset.getSeriesCount() == 3) {
+			plot.getRenderer().setSeriesPaint(0, Color.BLUE);
+			plot.getRenderer().setSeriesPaint(1, Color.CYAN);
+			plot.getRenderer().setSeriesPaint(2, Color.BLUE);
+		}
+		if (dataset.getSeriesCount() == 4) {
+			plot.getRenderer().setSeriesPaint(0, Color.BLUE);
+			plot.getRenderer().setSeriesPaint(1, Color.CYAN);
+			plot.getRenderer().setSeriesPaint(2, Color.BLUE);
+			plot.getRenderer().setSeriesPaint(3, Color.CYAN);
+		}
 		
 		// Synchronize axes
+		
+		double xInterval = (max_x.getUpperValue() - min_x.getLowerValue()) * 10 * 1.1;
 		
 		double domainInterval = domain.getUpperBound() - domain.getLowerBound();
 		double rangeInterval = range.getUpperBound() - range.getLowerBound();
 		
-		if (domainInterval > rangeInterval) {
-			double difference = domainInterval - rangeInterval;
+		double domainDifference = xInterval - domainInterval;
+		double rangeDifference = xInterval - rangeInterval;
 			
-			range.setLowerBound(range.getLowerBound() - difference / 2);
-			range.setUpperBound(range.getUpperBound() + difference / 2);
-		} else {
-			double difference = rangeInterval - domainInterval;
+		domain.setLowerBound(domain.getLowerBound() - domainDifference / 2);
+		domain.setUpperBound(domain.getUpperBound() + domainDifference / 2);
 			
-			domain.setLowerBound(domain.getLowerBound() - difference / 2);
-			domain.setUpperBound(domain.getUpperBound() + difference / 2);
-		}
+		range.setLowerBound(range.getLowerBound() - rangeDifference / 2);
+		range.setUpperBound(range.getUpperBound() + rangeDifference / 2);
 
 		// Update panel
 

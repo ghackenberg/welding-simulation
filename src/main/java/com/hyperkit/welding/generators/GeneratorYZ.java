@@ -64,9 +64,15 @@ public class GeneratorYZ extends Generator2D {
 		
 		lower_series.add(Math.abs(y_range.getLowerValue()) * 10, 0);
 		upper_series.add(Math.abs(y_range.getUpperValue()) * 10, 0);
+
+		XYSeries zero_series = new XYSeries("Materialgrenze");
+		
+		zero_series.add(-Math.max(Math.abs(y_range.getLowerValue()), y_range.getUpperValue()) * 10, 0);
+		zero_series.add(+Math.max(Math.abs(y_range.getLowerValue()), y_range.getUpperValue()) * 10, 0);
 		
 		result.addSeries(lower_series);
 		result.addSeries(upper_series);
+		result.addSeries(zero_series);
 		
 		progress.update(samples + 1, samples + 1);
 	}

@@ -23,6 +23,9 @@ public class GeneratorXY extends Generator2D {
 		XYSeries lower_series = new XYSeries("Obere Grenze");
 		XYSeries upper_series = new XYSeries("Untere Grenze");
 		
+		XYSeries lower_series_2 = new XYSeries("Obere Grenze (invertiert)");
+		XYSeries upper_series_2 = new XYSeries("Untere Grenze (invertiert)");
+		
 		int samples = configuration.getXYSamples();
 		
 		progress.initialize(samples + 1);
@@ -58,6 +61,9 @@ public class GeneratorXY extends Generator2D {
 			lower_series.add(lower_x * 10, -Math.abs(lower_y_range.getLowerValue()) * 10);
 			upper_series.add(upper_x * 10, -Math.abs(upper_y_range.getUpperValue()) * 10);
 			
+			lower_series_2.add(lower_x * 10, Math.abs(lower_y_range.getLowerValue()) * 10);
+			upper_series_2.add(upper_x * 10, Math.abs(upper_y_range.getUpperValue()) * 10);
+			
 			//System.out.println("Sample: " + sample + " " + lower_y + " " + lower_z_range.getLowerValue());
 			//System.out.println("Sample: " + sample + " " + upper_y + " " + upper_z_range.getUpperValue());
 			
@@ -67,8 +73,14 @@ public class GeneratorXY extends Generator2D {
 		lower_series.add(max_x.getLowerValue() * 10, 0);
 		upper_series.add(max_x.getUpperValue() * 10, 0);
 		
+		lower_series_2.add(max_x.getLowerValue() * 10, 0);
+		upper_series_2.add(max_x.getUpperValue() * 10, 0);
+		
 		result.addSeries(lower_series);
 		result.addSeries(upper_series);
+		
+		result.addSeries(lower_series_2);
+		result.addSeries(upper_series_2);
 		
 		progress.update(samples + 1, samples + 1);
 	}

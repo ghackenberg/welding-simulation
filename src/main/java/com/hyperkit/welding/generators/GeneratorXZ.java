@@ -67,8 +67,14 @@ public class GeneratorXZ extends Generator2D {
 		lower_series.add(max_x.getLowerValue() * 10, 0);
 		upper_series.add(max_x.getUpperValue() * 10, 0);
 		
+		XYSeries zero_series = new XYSeries("Materialgrenze"); 
+		
+		zero_series.add(min_x.getLowerValue() * 10, 0);
+		zero_series.add(max_x.getUpperValue() * 10, 0);
+		
 		result.addSeries(lower_series);
 		result.addSeries(upper_series);
+		result.addSeries(zero_series);
 		
 		progress.update(samples + 1, samples + 1);
 	}

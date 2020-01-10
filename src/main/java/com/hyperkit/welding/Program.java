@@ -193,9 +193,9 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz, progress);
 							generator_yz.generateDataset(opt_x, dataset_yz, progress);
 							
-							new RendererXY(chart_xy_panel, 0).run(dataset_xy);
-							new RendererXZ(chart_xz_panel, 0).run(dataset_xz);
-							new RendererYZ(chart_yz_panel, opt_x).run(dataset_yz);
+							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, dataset_xy);
+							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, dataset_xz);
+							new RendererYZ(chart_yz_panel, opt_x).run(min_x, max_x, dataset_yz);
 							
 							canvas.display();
 							
