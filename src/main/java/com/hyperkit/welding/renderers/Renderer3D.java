@@ -100,8 +100,8 @@ public class Renderer3D extends Generator {
 				}
 			}
 
-			for (double x = -Math.abs(range_x.getLowerValue()) * 2; x <= Math.abs(range_x.getLowerValue()) * 2; x += points_step) {
-				for (double y = -Math.abs(range_y.getLowerValue()) * 2; y <= Math.abs(range_y.getLowerValue()) * 2; y += points_step) {
+			for (double x = -Math.abs(range_x.getLowerValue()); x <= Math.abs(range_x.getLowerValue()); x += points_step) {
+				for (double y = -Math.abs(range_y.getLowerValue()); y <= Math.abs(range_y.getLowerValue()); y += points_step) {
 				//for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
 					double temperature = search.getModel().calculateTemperature(x, y, 0);
 					
