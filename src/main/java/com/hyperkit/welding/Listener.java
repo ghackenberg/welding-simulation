@@ -17,22 +17,40 @@ public class Listener implements GLEventListener {
 	
 	private XYSeriesCollection dataset_xy;
 	private XYSeriesCollection dataset_xz;
-	private XYSeriesCollection dataset_yz;
+	private XYSeriesCollection dataset_yz_widest;
+	private XYSeriesCollection dataset_yz_deepest;
 	
 	private Renderer3D renderer;
 	
-	private double opt_x;
+	private Range min_x;
+	private Range max_x;
 	
-	public Listener(XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz, Renderer3D renderer) {
+	private double widest_x;
+	private double deepest_x;
+	
+	public Listener(XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz_widest, XYSeriesCollection dataset_yz_deepest, Renderer3D renderer) {
 		this.dataset_xy = dataset_xy;
 		this.dataset_xz = dataset_xz;
-		this.dataset_yz = dataset_yz;
+		this.dataset_yz_widest = dataset_yz_widest;
+		this.dataset_yz_deepest = dataset_yz_deepest;
 		
 		this.renderer = renderer;
 	}
+	
+	public void setMinX(Range min_x) {
+		this.min_x = min_x;
+	}
+	
+	public void setMaxX(Range max_x) {
+		this.max_x = max_x;
+	}
 
-	public void setOptX(double opt_x) {
-		this.opt_x = opt_x;
+	public void setWidestX(double widest_x) {
+		this.widest_x = widest_x;
+	}
+	
+	public void setDeepestX(double deepest_x) {
+		this.deepest_x = deepest_x;
 	}
 
 	@Override
@@ -52,7 +70,7 @@ public class Listener implements GLEventListener {
 	
 	@Override
 	public void display(GLAutoDrawable drawable) {
-		renderer.render(opt_x, dataset_xy, dataset_xz, dataset_yz, width, height, drawable, glu);
+		renderer.render(min_x, max_x, widest_x, deepest_x, dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, width, height, drawable, glu);
 	}
 	
 	@Override

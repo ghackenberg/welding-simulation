@@ -286,7 +286,7 @@ public class Search {
 		return new Range(lower_z, upper_z);
 	}
 	
-	public Range findMinimumX(double y, double z) throws SearchException {
+	public Range findMinimumX(double start_x, double y, double z) throws SearchException {
 		
 		System.out.println("[Search.findMinimumX(" + y + ", " + z + ")] Starting ...");
 		
@@ -298,8 +298,8 @@ public class Search {
 		double temperature_threshold = configuration.getTemperatureThershold();
 		double step_size = configuration.getInitialStepSize();
 		
-		double lower_x = 0;
-		double upper_x = 0;
+		double lower_x = start_x;
+		double upper_x = start_x;
 		
 		double lower_temperature = model.calculateTemperature(lower_x, y, z);
 		double upper_temperature = model.calculateTemperature(upper_x, y, z);
@@ -418,7 +418,7 @@ public class Search {
 		return new Range(lower_x, upper_x);
 	}
 	
-	public Range findMaximumX(double y, double z) throws SearchException {
+	public Range findMaximumX(double start_x, double y, double z) throws SearchException {
 		
 		System.out.println("[Search.findMaximumX(" + y + ", " + z + ")] Starting ...");
 		
@@ -430,8 +430,8 @@ public class Search {
 		double temperature_threshold = configuration.getTemperatureThershold();
 		double step_size = configuration.getInitialStepSize();
 		
-		double lower_x = 0;
-		double upper_x = 0;
+		double lower_x = start_x;
+		double upper_x = start_x;
 		
 		double lower_temperature = model.calculateTemperature(lower_x, y, z);
 		double upper_temperature = model.calculateTemperature(upper_x, y, z);
@@ -550,7 +550,7 @@ public class Search {
 		return new Range(lower_x, upper_x);
 	}
 	
-	public double findOptimumX(Range min_x, Range max_x) throws SearchException {
+	public double findWidestX(Range min_x, Range max_x) throws SearchException {
 		
 		double last_x = min_x.getUpperValue();
 		double last_width = Math.abs(findMaximumY(last_x, 0).getLowerValue());
@@ -589,6 +589,53 @@ public class Search {
 				
 				last_x -= step_size;
 				last_width = next_width;
+			}
+			step_size /= 2.0;
+		}
+		
+		return last_x;
+		
+	}
+	
+	public double findDeepestX(Range min_x, Range max_x) throws SearchException {
+		
+		double last_x = min_x.getUpperValue();
+		double last_depth = Math.abs(findMaximumZ(last_x, 0).getLowerValue());
+		
+		double step_size = (max_x.getUpperValue() - min_x.getUpperValue()) / 10.0;
+		
+		double next_depth;
+		
+		long outer_timestamp = System.currentTimeMillis();
+		
+		while (step_size >= 0.000000001) {
+			
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
+				throw new SearchException("Problem 1");
+			}
+			
+			long inner_timestamp = System.currentTimeMillis();
+			
+			while ((next_depth = Math.abs(findMaximumZ(last_x + step_size, 0).getLowerValue())) > last_depth) {
+				
+				if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+					throw new SearchException("Problem 2");
+				}
+				
+				last_x += step_size;
+				last_depth = next_depth;
+			}
+			
+			inner_timestamp = System.currentTimeMillis();
+			
+			while ((next_depth = Math.abs(findMaximumZ(last_x - step_size, 0).getLowerValue())) > last_depth) {
+				
+				if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+					throw new SearchException("Problem 2");
+				}
+				
+				last_x -= step_size;
+				last_depth = next_depth;
 			}
 			step_size /= 2.0;
 		}

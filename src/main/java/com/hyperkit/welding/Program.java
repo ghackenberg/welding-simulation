@@ -54,6 +54,8 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 		XYSeriesCollection dataset_xy = new XYSeriesCollection();
 		XYSeriesCollection dataset_xz = new XYSeriesCollection();
 		XYSeriesCollection dataset_yz = new XYSeriesCollection();
+		XYSeriesCollection dataset_yz_widest = new XYSeriesCollection();
+		XYSeriesCollection dataset_yz_deepest = new XYSeriesCollection();
 
 		// Create model
 
@@ -91,7 +93,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 		GLCapabilities capabilities = new GLCapabilities(profile);
 		GLCanvas canvas = new GLCanvas(capabilities);
 
-		Listener listener = new Listener(dataset_xy, dataset_xz, dataset_yz, render_3d);
+		Listener listener = new Listener(dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, render_3d);
 		canvas.addGLEventListener(listener);
 
 		// Create progress bar
@@ -105,7 +107,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 
 		// Create button
 
-		JButton button = new JButton("Schweißprofil berechnen");
+		JButton button = new JButton("Schweiï¿½profil berechnen");
 		
 		// Create configurator
 		
@@ -144,7 +146,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 
 		// Create frame
 
-		JFrame frame = new JFrame("Software für die Berechnung von Schweißprofilen");
+		JFrame frame = new JFrame("Software fï¿½r die Berechnung von Schweiï¿½profilen");
 
 		frame.setLayout(new BorderLayout());
 		frame.add(configuration_panel, BorderLayout.WEST);
@@ -167,14 +169,21 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							dataset_xy.removeAllSeries();
 							dataset_xz.removeAllSeries();
 							dataset_yz.removeAllSeries();
+							dataset_yz_widest.removeAllSeries();
+							dataset_yz_deepest.removeAllSeries();
 							
 							canvas.display();
 							
-							Range min_x = search.findMinimumX(0, 0);
-							Range max_x = search.findMaximumX(0, 0);
-							double opt_x = search.findOptimumX(min_x, max_x);
+							Range min_x = search.findMinimumX(search_configuration.getInitialPositionMin(), 0, 0);
+							Range max_x = search.findMaximumX(search_configuration.getInitialPositionMax(), 0, 0);
 							
-							listener.setOptX(opt_x);
+							double widest_x = search.findWidestX(min_x, max_x);
+							double deepest_x = search.findDeepestX(min_x, max_x);
+							
+							listener.setMinX(min_x);
+							listener.setMaxX(max_x);
+							listener.setWidestX(widest_x);
+							listener.setDeepestX(deepest_x);
 							
 							Progress progress = new Progress() {
 								@Override
@@ -191,17 +200,19 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 							generator_xy.generateDataset(min_x, max_x, 0, dataset_xy, progress);
 							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz, progress);
-							generator_yz.generateDataset(opt_x, dataset_yz, progress);
+							generator_yz.generateDataset(widest_x, dataset_yz_widest, progress);
+							generator_yz.generateDataset(deepest_x, dataset_yz_deepest, progress);
+							generator_yz.generateDataset(widest_x, deepest_x, dataset_yz, progress);
 							
 							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, dataset_xy);
 							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, dataset_xz);
-							new RendererYZ(chart_yz_panel, opt_x).run(min_x, max_x, dataset_yz);
+							new RendererYZ(chart_yz_panel, widest_x, deepest_x).run(min_x, max_x, dataset_yz);
 							
 							canvas.display();
 							
 						} catch (SearchException e) {
 							
-							JOptionPane.showMessageDialog(frame, "Das Schweißprofil konnte nicht berechnet werden. Passen sie die Parametereinstellungen an.", "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(frame, "Das Schweiï¿½profil konnte nicht berechnet werden. Passen sie die Parametereinstellungen an.", "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
 							
 							e.printStackTrace();
 							

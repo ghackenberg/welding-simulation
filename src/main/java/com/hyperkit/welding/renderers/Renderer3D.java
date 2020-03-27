@@ -26,7 +26,7 @@ public class Renderer3D extends Generator {
 		this.configuration = configuration;
 	}
 
-	public void render(double opt_x, XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz, int width, int height, GLAutoDrawable drawable, GLU glu) {
+	public void render(Range min_x, Range max_x, double widest_x, double deepest_x, XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz_widest, XYSeriesCollection dataset_yz_deepest, int width, int height, GLAutoDrawable drawable, GLU glu) {
 
 		try {
 
@@ -38,15 +38,14 @@ public class Renderer3D extends Generator {
 			
 			// Check datasets
 			
-			if (dataset_xy.getSeries().size() != 4 || dataset_xz.getSeries().size() != 3 || dataset_yz.getSeries().size() != 3) {
+			if (dataset_xy.getSeries().size() != 4 || dataset_xz.getSeries().size() != 3 || dataset_yz_widest.getSeries().size() != 3 || dataset_yz_deepest.getSeries().size() != 3) {
 				return;
 			}
 
 			// Find ranges
-
-			Range range_x = search.findMaximumX(0, 0);
-			Range range_y = search.findMaximumY(opt_x, 0);
-			Range range_z = search.findMaximumZ(opt_x, 0);
+			
+			Range range_y = search.findMaximumY(widest_x, 0);
+			Range range_z = search.findMaximumZ(deepest_x, 0);
 
 			// Change to projection matrix
 
@@ -67,7 +66,7 @@ public class Renderer3D extends Generator {
 
 			float widthHeightRatio = (float) width / (float) height;
 			glu.gluPerspective(45, widthHeightRatio, 0.001, 1000);
-			glu.gluLookAt(camera_x, camera_y, camera_z, opt_x, range_z.getLowerValue() / 2, 0, 0, 1, 0);
+			glu.gluLookAt(camera_x, camera_y, camera_z, (widest_x + deepest_x) / 2, range_z.getLowerValue() / 2, 0, 0, 1, 0);
 
 			// Change back to model view matrix
 
@@ -88,7 +87,7 @@ public class Renderer3D extends Generator {
 			double min = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
 			double max = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
 
-			for (double x = -Math.abs(range_x.getLowerValue()); x <= Math.abs(range_x.getLowerValue()); x += points_step) {
+			for (double x = min_x.getLowerValue(); x <= max_x.getUpperValue(); x += points_step) {
 				for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step) {
 				//for (double z = -Math.abs(range_z.getLowerValue()); z <= Math.abs(range_z.getLowerValue()); z += points_step) {
 					double temperature = search.getModel().calculateTemperature(x, y, 0);
@@ -100,7 +99,7 @@ public class Renderer3D extends Generator {
 				}
 			}
 
-			for (double x = -Math.abs(range_x.getLowerValue()); x <= Math.abs(range_x.getLowerValue()); x += points_step) {
+			for (double x = min_x.getLowerValue(); x <= max_x.getUpperValue(); x += points_step) {
 				for (double y = -Math.abs(range_y.getLowerValue()); y <= Math.abs(range_y.getLowerValue()); y += points_step) {
 				//for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
 					double temperature = search.getModel().calculateTemperature(x, y, 0);
@@ -236,7 +235,7 @@ public class Renderer3D extends Generator {
 				}
 			}
 			
-			for (Object series_object : dataset_yz.getSeries()) {
+			for (Object series_object : dataset_yz_widest.getSeries()) {
 				if (series_object instanceof XYSeries) {
 					gl.glBegin(GL2.GL_LINES);
 					gl.glLineWidth(3);
@@ -251,8 +250,57 @@ public class Renderer3D extends Generator {
 							XYDataItem item = (XYDataItem) item_object;
 							
 							if (previous != null) {
-								gl.glVertex3d(opt_x, previous.getYValue() / 10, previous.getXValue() / 10);
-								gl.glVertex3d(opt_x, item.getYValue() / 10, item.getXValue() / 10);
+								gl.glVertex3d(widest_x, previous.getYValue() / 10, previous.getXValue() / 10);
+								gl.glVertex3d(widest_x, item.getYValue() / 10, item.getXValue() / 10);
+							}
+							
+							previous = item;
+						} else {
+							throw new IllegalStateException();
+						}
+					}
+					
+					gl.glEnd();
+					
+					/*
+					XYDataItem first = (XYDataItem) series.getItems().get(0);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0, 0);
+					gl.glTranslated(opt_x, first.getYValue() / 10, first.getXValue() / 10);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+					
+					XYDataItem last = (XYDataItem) series.getItems().get(series.getItemCount() - 1);
+					
+					gl.glPushMatrix();
+					gl.glColor3d(0, 0, 0);
+					gl.glTranslated(opt_x, last.getYValue() / 10, last.getXValue() / 10);
+					glu.gluSphere(quadirc, 0.01, 10, 10);
+					gl.glPopMatrix();
+					*/
+				} else {
+					throw new IllegalStateException();
+				}
+			}
+			
+			for (Object series_object : dataset_yz_deepest.getSeries()) {
+				if (series_object instanceof XYSeries) {
+					gl.glBegin(GL2.GL_LINES);
+					gl.glLineWidth(3);
+					gl.glColor3f(0,0,1);
+					
+					XYSeries series = (XYSeries) series_object;
+					
+					previous = null;
+					
+					for (Object item_object : series.getItems()) {
+						if (item_object instanceof XYDataItem) {
+							XYDataItem item = (XYDataItem) item_object;
+							
+							if (previous != null) {
+								gl.glVertex3d(deepest_x, previous.getYValue() / 10, previous.getXValue() / 10);
+								gl.glVertex3d(deepest_x, item.getYValue() / 10, item.getXValue() / 10);
 							}
 							
 							previous = item;
