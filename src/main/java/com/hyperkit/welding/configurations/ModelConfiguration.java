@@ -23,7 +23,7 @@ public abstract class ModelConfiguration extends Configuration {
 	public void setStartTemperature(double start_temperature) {
 		this.start_temperature.set(start_temperature);
 	}
-	@Parameter(name = "Ausgangstemperatur", unit = "ï¿½C")
+	@Parameter(name = "Ausgangstemperatur", unit = "°C")
 	@DoubleParameter(min = 0)
 	public DoubleProperty startTemperatureProperty() {
 		return start_temperature;
@@ -39,7 +39,7 @@ public abstract class ModelConfiguration extends Configuration {
 	public void setTotalHeat(double total_heat) {
 		this.total_heat.set(total_heat);
 	}
-	@Parameter(name = "Wï¿½rmeeintrag", unit = "W")
+	@Parameter(name = "Wärmeeintrag", unit = "W")
 	@DoubleParameter(min = 0)
 	public DoubleProperty totalHeatProperty() {
 		return total_heat;
@@ -55,7 +55,7 @@ public abstract class ModelConfiguration extends Configuration {
 	public void setWeldingSpeed(double welding_speed) {
 		this.welding_speed.set(welding_speed);
 	}
-	@Parameter(name = "Schweiï¿½geschwindigkeit", unit = "cm/min")
+	@Parameter(name = "Schweißgeschwindigkeit", unit = "cm/min")
 	@DoubleParameter(min = 0)
 	public DoubleProperty weldingSpeedProperty() {
 		return welding_speed;
@@ -71,7 +71,7 @@ public abstract class ModelConfiguration extends Configuration {
 	public void setThermalDiffusivity(double thermal_diffusivity) {
 		this.thermal_diffusivity.set(thermal_diffusivity);
 	}
-	@Parameter(name = "Temperaturleitfï¿½higkeit", unit = "mmï¿½/s")
+	@Parameter(name = "Temperaturleitfähigkeit", unit = "mm²/s")
 	@DoubleParameter(min = 0)
 	public DoubleProperty thermalDiffusivityProperty() {
 		return thermal_diffusivity;
@@ -87,7 +87,7 @@ public abstract class ModelConfiguration extends Configuration {
 	public void setThermalConductivity(double thermal_conductivity) {
 		this.thermal_conductivity.set(thermal_conductivity);
 	}
-	@Parameter(name = "Wï¿½rmeleitfï¿½higkeit", unit = "W/(mK)")
+	@Parameter(name = "Wärmeleitfähigkeit", unit = "W/(mK)")
 	@DoubleParameter(min = 0)
 	public DoubleProperty thermalConductivityProperty() {
 		return thermal_conductivity;

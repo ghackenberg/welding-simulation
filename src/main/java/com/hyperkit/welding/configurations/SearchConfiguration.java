@@ -26,7 +26,7 @@ public class SearchConfiguration extends Configuration {
 	public void setLimitTemperature(double limit_temperature) {
 		this.limit_temperature.set(limit_temperature);
 	}
-	@Parameter(name = "Zieltemperatur", unit = "ï¿½C", order = 0)
+	@Parameter(name = "Zieltemperatur", unit = "°C", order = 0)
 	@DoubleParameter(min = 0)
 	public DoubleProperty limitTemperatureProperty() {
 		return limit_temperature;
@@ -42,7 +42,7 @@ public class SearchConfiguration extends Configuration {
 	public void setTemperatureThreshold(double temperature_threshold) {
 		this.temperature_threshold.set(temperature_threshold);
 	}
-	@Parameter(name = "Temperaturgenaugigkeit", unit = "ï¿½C", order = 1)
+	@Parameter(name = "Temperaturgenaugigkeit", unit = "°C", order = 1)
 	@DoubleParameter(min = 0)
 	public DoubleProperty temperatureThresholdProperty() {
 		return temperature_threshold;
@@ -122,7 +122,7 @@ public class SearchConfiguration extends Configuration {
 	public void setOuterLimit(long outer_limit) {
 		this.outer_limit.set(outer_limit);
 	}
-	@Parameter(name = "ï¿½uï¿½eres Zeitfenster", unit = "ms", order = 6)
+	@Parameter(name = "Äußeres Zeitfenster", unit = "ms", order = 6)
 	@LongParameter(min = 1)
 	public LongProperty outerLimitProperty() {
 		return outer_limit;

@@ -8,7 +8,7 @@ public class RendererYZ extends Renderer2D {
 	private double deepest_x;
 
 	public RendererYZ(ChartPanel chart_panel, double widest_x, double deepest_x) {
-		super(chart_panel, "YZ-Schweiï¿½profil", "Breite [y]", "Tiefe [z]");
+		super(chart_panel, "YZ-Schweißprofil", "Breite [y]", "Tiefe [z]");
 		
 		this.widest_x = widest_x;
 		this.deepest_x = deepest_x;

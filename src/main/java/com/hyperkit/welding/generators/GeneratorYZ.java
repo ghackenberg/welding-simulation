@@ -36,8 +36,8 @@ public class GeneratorYZ extends Generator2D {
 			Range lower_z_range_opt = new Range(0, 0);
 			Range upper_z_range_opt = new Range(0, 0);
 			
-			for (int step = 0; step <= 10; step++) {
-				double x = widest_x + (deepest_x - widest_x) / 10 * step;
+			for (int step = 0; step <= configuration.getYZXSamples(); step++) {
+				double x = widest_x + (deepest_x - widest_x) / configuration.getYZXSamples() * step;
 				
 				Range y_range_current = search.findMaximumY(x, 0);
 				

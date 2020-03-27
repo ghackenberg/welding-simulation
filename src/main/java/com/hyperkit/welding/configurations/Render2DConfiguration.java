@@ -47,6 +47,22 @@ public class Render2DConfiguration extends Configuration {
 	
 	// Samples
 	
+	private IntegerProperty yzxSamples = new SimpleIntegerProperty(10);
+	
+	public int getYZXSamples() {
+		return yzxSamples.get();
+	}
+	public void setYZXSamples(int yzxSamples) {
+		this.yzxSamples.set(yzxSamples);
+	}
+	@Parameter(name = "YZ-Überlagerungspunkte", unit = "Punkte")
+	@IntegerParameter(min = 2)
+	public IntegerProperty yzxSamplesProperty() {
+		return yzxSamples;
+	}
+	
+	// Samples
+	
 	private IntegerProperty xzSamples = new SimpleIntegerProperty(200);
 	
 	public int getXZSamples() {

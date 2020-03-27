@@ -107,7 +107,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 
 		// Create button
 
-		JButton button = new JButton("Schweiï¿½profil berechnen");
+		JButton button = new JButton("Schweißprofil berechnen");
 		
 		// Create configurator
 		
@@ -146,7 +146,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 
 		// Create frame
 
-		JFrame frame = new JFrame("Software fï¿½r die Berechnung von Schweiï¿½profilen");
+		JFrame frame = new JFrame("Software für die Berechnung von Schweißprofilen");
 
 		frame.setLayout(new BorderLayout());
 		frame.add(configuration_panel, BorderLayout.WEST);
@@ -212,7 +212,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 						} catch (SearchException e) {
 							
-							JOptionPane.showMessageDialog(frame, "Das Schweiï¿½profil konnte nicht berechnet werden. Passen sie die Parametereinstellungen an.", "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(frame, "Das Schweißprofil konnte nicht berechnet werden. Passen sie die Parametereinstellungen an.", "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
 							
 							e.printStackTrace();
 							
