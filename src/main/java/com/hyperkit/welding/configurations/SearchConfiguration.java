@@ -34,7 +34,7 @@ public class SearchConfiguration extends Configuration {
 	
 	// Temperature threshold
 
-	private DoubleProperty temperature_threshold = new SimpleDoubleProperty(5);
+	private DoubleProperty temperature_threshold = new SimpleDoubleProperty(0.01);
 	
 	public double getTemperatureThershold() {
 		return temperature_threshold.get();
@@ -48,41 +48,25 @@ public class SearchConfiguration extends Configuration {
 		return temperature_threshold;
 	}
 	
-	// Initial position min
+	// Initial position
 	
-	private DoubleProperty initial_position_min = new SimpleDoubleProperty(0);
+	private DoubleProperty initial_position = new SimpleDoubleProperty(0);
 	
-	public double getInitialPositionMin() {
-		return initial_position_min.get();
+	public double getInitialPosition() {
+		return initial_position.get();
 	}
-	public void setInitialPositionMin(double initial_position_min) {
-		this.initial_position_min.set(initial_position_min);
+	public void setInitialPositionMin(double initial_position) {
+		this.initial_position.set(initial_position);
 	}
-	@Parameter(name = "Initiale Position (min)", unit = "mm", order = 2)
+	@Parameter(name = "Initiale Position", unit = "mm", order = 2)
 	@DoubleParameter
-	public DoubleProperty initialPositionMinProperty() {
-		return initial_position_min;
-	}
-	
-	// Initial position max
-	
-	private DoubleProperty initial_position_max = new SimpleDoubleProperty(0);
-	
-	public double getInitialPositionMax() {
-		return initial_position_max.get();
-	}
-	public void setInitialPositionMax(double initial_position_max) {
-		this.initial_position_max.set(initial_position_max);
-	}
-	@Parameter(name = "Initiale Position (max)", unit = "mm", order = 3)
-	@DoubleParameter
-	public DoubleProperty initialPositionMaxProperty() {
-		return initial_position_max;
+	public DoubleProperty initialPositionProperty() {
+		return initial_position;
 	}
 	
 	// Initial step size
 
-	private DoubleProperty initial_step_size = new SimpleDoubleProperty(1);
+	private DoubleProperty initial_step_size = new SimpleDoubleProperty(0.1);
 	
 	public double getInitialStepSize() {
 		return initial_step_size.get();

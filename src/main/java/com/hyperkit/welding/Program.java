@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -33,6 +34,8 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 
 public abstract class Program<S extends ModelConfiguration, T extends Model<S>> {
+	
+	protected static final DecimalFormat FORMAT = new DecimalFormat("0.00");
 
 	public void run(String[] args) {
 		// Look and feel
@@ -165,7 +168,6 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 					@Override
 					public void run() {
 						try {
-							
 							dataset_xy.removeAllSeries();
 							dataset_xz.removeAllSeries();
 							dataset_yz.removeAllSeries();
@@ -174,11 +176,21 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 							canvas.display();
 							
-							Range min_x = search.findMinimumX(search_configuration.getInitialPositionMin(), 0, 0);
-							Range max_x = search.findMaximumX(search_configuration.getInitialPositionMax(), 0, 0);
+							Range min_x = search.findMinimumX(search_configuration.getInitialPosition() / 10, 0, 0);
 							
-							double widest_x = search.findWidestX(min_x, max_x);
-							double deepest_x = search.findDeepestX(min_x, max_x);
+							JOptionPane.showMessageDialog(frame, "Untere X-Grenze gefunden bei X=" + FORMAT.format(min_x.getInnerValue() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
+							
+							Range max_x = search.findMaximumX(search_configuration.getInitialPosition() / 10, 0, 0);
+							
+							JOptionPane.showMessageDialog(frame, "Obere X-Grenze gefunden bei X=" + FORMAT.format(max_x.getOuterValue() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
+							
+							double widest_x = search.findWidestX(min_x.getInnerValue(), max_x.getInnerValue());
+							
+							JOptionPane.showMessageDialog(frame, "Breiteste Stelle gefunden bei X=" + FORMAT.format(widest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
+							
+							double deepest_x = search.findDeepestX(min_x.getInnerValue(), max_x.getInnerValue());
+							
+							JOptionPane.showMessageDialog(frame, "Tiefste Stelle gefunden bei X=" + FORMAT.format(deepest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
 							listener.setMinX(min_x);
 							listener.setMaxX(max_x);
@@ -212,7 +224,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 						} catch (SearchException e) {
 							
-							JOptionPane.showMessageDialog(frame, "Das Schweiﬂprofil konnte nicht berechnet werden. Passen sie die Parametereinstellungen an.", "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(frame, e.getMessage(), "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
 							
 							e.printStackTrace();
 							

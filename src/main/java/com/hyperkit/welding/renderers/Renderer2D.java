@@ -74,7 +74,7 @@ public abstract class Renderer2D extends Renderer {
 		
 		// Synchronize axes
 		
-		double xInterval = (max_x.getUpperValue() - min_x.getLowerValue()) * 10 * 1.1;
+		double xInterval = (max_x.getOuterValue() - min_x.getOuterValue()) * 10 * 1.1;
 		
 		double domainInterval = domain.getUpperBound() - domain.getLowerBound();
 		double rangeInterval = range.getUpperBound() - range.getLowerBound();

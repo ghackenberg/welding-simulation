@@ -45,7 +45,7 @@ public class Renderer3D extends Generator {
 			// Find ranges
 			
 			Range range_y = search.findMaximumY(widest_x, 0);
-			Range range_z = search.findMaximumZ(deepest_x, 0);
+			Range range_z = search.findMinimumZ(deepest_x, 0);
 
 			// Change to projection matrix
 
@@ -66,7 +66,7 @@ public class Renderer3D extends Generator {
 
 			float widthHeightRatio = (float) width / (float) height;
 			glu.gluPerspective(45, widthHeightRatio, 0.001, 1000);
-			glu.gluLookAt(camera_x, camera_y, camera_z, (widest_x + deepest_x) / 2, range_z.getLowerValue() / 2, 0, 0, 1, 0);
+			glu.gluLookAt(camera_x, camera_y, camera_z, (widest_x + deepest_x) / 2, range_z.getOuterValue() / 2, 0, 0, 1, 0);
 
 			// Change back to model view matrix
 
@@ -87,8 +87,8 @@ public class Renderer3D extends Generator {
 			double min = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
 			double max = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
 
-			for (double x = min_x.getLowerValue(); x <= max_x.getUpperValue(); x += points_step) {
-				for (double y = -Math.abs(range_y.getLowerValue()); y <= 0; y+= points_step) {
+			for (double x = min_x.getInnerValue(); x <= max_x.getInnerValue(); x += points_step) {
+				for (double y = -Math.abs(range_y.getInnerValue()); y <= 0; y+= points_step) {
 				//for (double z = -Math.abs(range_z.getLowerValue()); z <= Math.abs(range_z.getLowerValue()); z += points_step) {
 					double temperature = search.getModel().calculateTemperature(x, y, 0);
 					
@@ -99,8 +99,8 @@ public class Renderer3D extends Generator {
 				}
 			}
 
-			for (double x = min_x.getLowerValue(); x <= max_x.getUpperValue(); x += points_step) {
-				for (double y = -Math.abs(range_y.getLowerValue()); y <= Math.abs(range_y.getLowerValue()); y += points_step) {
+			for (double x = min_x.getInnerValue(); x <= max_x.getInnerValue(); x += points_step) {
+				for (double y = -Math.abs(range_y.getInnerValue()); y <= Math.abs(range_y.getInnerValue()); y += points_step) {
 				//for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
 					double temperature = search.getModel().calculateTemperature(x, y, 0);
 					
