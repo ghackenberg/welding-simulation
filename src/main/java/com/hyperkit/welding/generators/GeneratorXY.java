@@ -20,11 +20,11 @@ public class GeneratorXY extends Generator2D {
 	}
 	
 	public void generateDataset(Range min_x, Range max_x, double z, XYSeriesCollection result, Progress progress) throws SearchException {
-		XYSeries lower_series = new XYSeries("Obere Grenze");
-		XYSeries upper_series = new XYSeries("Untere Grenze");
+		XYSeries lower_series = new XYSeries("Innen (+)");
+		XYSeries upper_series = new XYSeries("Auﬂen (+)");
 		
-		XYSeries lower_series_2 = new XYSeries("Obere Grenze (invertiert)");
-		XYSeries upper_series_2 = new XYSeries("Untere Grenze (invertiert)");
+		XYSeries lower_series_2 = new XYSeries("Innen (-)");
+		XYSeries upper_series_2 = new XYSeries("Auﬂen (-)");
 		
 		int samples = configuration.getXYSamples();
 		

@@ -16,7 +16,7 @@ public class RendererYZ extends Renderer2D {
 	
 	@Override
 	protected String getAnnotation() {
-		return "breitestes x = " + FORMAT.format(widest_x * 10) + " mm, tiefstes x = " + FORMAT.format(deepest_x * 10) + "mm";
+		return "x (b) = " + FORMAT.format(widest_x * 10) + " mm, x (t) = " + FORMAT.format(deepest_x * 10) + "mm";
 	}
 
 }

@@ -38,7 +38,7 @@ public class Renderer3D extends Generator {
 			
 			// Check datasets
 			
-			if (dataset_xy.getSeries().size() != 4 || dataset_xz.getSeries().size() != 3 || dataset_yz_widest.getSeries().size() != 3 || dataset_yz_deepest.getSeries().size() != 3) {
+			if (dataset_xy.getSeries().size() != 4 || dataset_xz.getSeries().size() != 2 || dataset_yz_widest.getSeries().size() != 3 || dataset_yz_deepest.getSeries().size() != 3) {
 				return;
 			}
 

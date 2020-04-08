@@ -52,26 +52,7 @@ public abstract class Renderer2D extends Renderer {
 		
 		ValueAxis domain = plot.getDomainAxis();
 		ValueAxis range = plot.getRangeAxis();
-		
-		// Add markers
-		
-		plot.addDomainMarker(new ValueMarker(0, Color.BLACK, new BasicStroke()));
-		plot.addRangeMarker(new ValueMarker(0, Color.BLACK, new BasicStroke()));
-		
-		// Set paint
-		
-		if (dataset.getSeriesCount() == 3) {
-			plot.getRenderer().setSeriesPaint(0, Color.BLUE);
-			plot.getRenderer().setSeriesPaint(1, Color.CYAN);
-			plot.getRenderer().setSeriesPaint(2, Color.BLUE);
-		}
-		if (dataset.getSeriesCount() == 4) {
-			plot.getRenderer().setSeriesPaint(0, Color.BLUE);
-			plot.getRenderer().setSeriesPaint(1, Color.CYAN);
-			plot.getRenderer().setSeriesPaint(2, Color.BLUE);
-			plot.getRenderer().setSeriesPaint(3, Color.CYAN);
-		}
-		
+
 		// Synchronize axes
 		
 		double xInterval = (max_x.getOuterValue() - min_x.getOuterValue()) * 10 * 1.1;
@@ -90,6 +71,32 @@ public abstract class Renderer2D extends Renderer {
 			
 		range.setLowerBound(range.getLowerBound() - rangeDifference / 2);
 		range.setUpperBound(range.getUpperBound() + rangeDifference / 2);
+		
+		// Add markers
+		
+		plot.addDomainMarker(new ValueMarker(0, Color.BLACK, new BasicStroke()));
+		plot.addRangeMarker(new ValueMarker(0, Color.BLACK, new BasicStroke()));
+		
+		// Set paint
+		
+		if (dataset.getSeriesCount() == 2) {
+			plot.getRenderer().setSeriesPaint(0, new Color(0, 0, 255));
+			plot.getRenderer().setSeriesPaint(1, new Color(0, 0, 128));
+		}
+		if (dataset.getSeriesCount() == 4) {
+			plot.getRenderer().setSeriesPaint(0, new Color(0, 0, 255));
+			plot.getRenderer().setSeriesPaint(1, new Color(0, 0, 128));
+			plot.getRenderer().setSeriesPaint(2, new Color(0, 0, 255));
+			plot.getRenderer().setSeriesPaint(3, new Color(0, 0, 128));
+		}
+		if (dataset.getSeriesCount() == 6) {
+			plot.getRenderer().setSeriesPaint(0, new Color(0, 0, 255));
+			plot.getRenderer().setSeriesPaint(1, new Color(0, 0, 128));
+			plot.getRenderer().setSeriesPaint(2, new Color(255, 0, 0));
+			plot.getRenderer().setSeriesPaint(3, new Color(128, 0, 0));
+			plot.getRenderer().setSeriesPaint(4, new Color(0, 255, 0));
+			plot.getRenderer().setSeriesPaint(5, new Color(0, 128, 0));
+		}
 
 		// Update panel
 
