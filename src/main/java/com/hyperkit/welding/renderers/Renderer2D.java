@@ -32,7 +32,7 @@ public abstract class Renderer2D extends Renderer {
 	
 	protected abstract String getAnnotation();
 	
-	public void run(Range min_x, Range max_x, XYSeriesCollection dataset) {
+	public void run(Range min_x, Range max_x, Range max_y, Range min_z, XYSeriesCollection dataset) {
 		
 		double upper_area = Integrator.calculateArea(dataset.getSeries(0));
 		double lower_area = Integrator.calculateArea(dataset.getSeries(1));
@@ -75,12 +75,15 @@ public abstract class Renderer2D extends Renderer {
 		// Synchronize axes
 		
 		double xInterval = (max_x.getOuterValue() - min_x.getOuterValue()) * 10 * 1.1;
+		double yInterval = max_y.getOuterValue() * 2 * 10 * 1.1;
+		double zInterval = -min_z.getOuterValue() * 10 * 1.1;
+		double xyzInterval = Math.max(Math.max(xInterval, yInterval), zInterval);
 		
 		double domainInterval = domain.getUpperBound() - domain.getLowerBound();
 		double rangeInterval = range.getUpperBound() - range.getLowerBound();
 		
-		double domainDifference = xInterval - domainInterval;
-		double rangeDifference = xInterval - rangeInterval;
+		double domainDifference = xyzInterval - domainInterval;
+		double rangeDifference = xyzInterval - rangeInterval;
 			
 		domain.setLowerBound(domain.getLowerBound() - domainDifference / 2);
 		domain.setUpperBound(domain.getUpperBound() + domainDifference / 2);

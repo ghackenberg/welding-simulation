@@ -186,9 +186,13 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 							double widest_x = search.findWidestX(min_x.getInnerValue(), max_x.getInnerValue());
 							
+							Range max_y = search.findMaximumY(widest_x, 0);
+							
 							JOptionPane.showMessageDialog(frame, "Breiteste Stelle gefunden bei X=" + FORMAT.format(widest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
 							double deepest_x = search.findDeepestX(min_x.getInnerValue(), max_x.getInnerValue());
+							
+							Range min_z = search.findMinimumZ(deepest_x, 0);
 							
 							JOptionPane.showMessageDialog(frame, "Tiefste Stelle gefunden bei X=" + FORMAT.format(deepest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
@@ -216,9 +220,9 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							generator_yz.generateDataset(deepest_x, dataset_yz_deepest, progress);
 							generator_yz.generateDataset(widest_x, deepest_x, dataset_yz, progress);
 							
-							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, dataset_xy);
-							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, dataset_xz);
-							new RendererYZ(chart_yz_panel, widest_x, deepest_x).run(min_x, max_x, dataset_yz);
+							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xy);
+							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xz);
+							new RendererYZ(chart_yz_panel, widest_x, deepest_x).run(min_x, max_x, max_y, min_z, dataset_yz);
 							
 							canvas.display();
 							

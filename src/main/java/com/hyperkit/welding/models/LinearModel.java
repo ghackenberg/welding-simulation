@@ -60,15 +60,15 @@ public class LinearModel extends Model<LinearModelConfiguration> {
 			
 			//System.out.println("Sample y: " + sample_y);
 			
-			double square_root = Math.sqrt(Math.pow(x, 2) + Math.pow(y - sample_y, 2) + Math.pow(z, 2));
+			double distance = Math.sqrt(Math.pow(x - 0, 2) + Math.pow(y - sample_y, 2) + Math.pow(z - 0, 2));
 			
 			//System.out.println("Square root: " + square_root);
 			
-			double denominator = 2 * Math.PI * thermal_conductivity * square_root;
+			double denominator = 2 * Math.PI * thermal_conductivity * distance;
 			
 			//System.out.println("Denominator: " + denominator);
 			
-			sum += heat * Math.exp(welding_speed / 2 / thermal_diffusivity * (x - square_root)) / denominator;
+			sum += heat / denominator * Math.exp(welding_speed / 2 / thermal_diffusivity * (x - distance));
 		}
 		
 		//System.out.println("Calculated temperature: x = " + x + ", y = " + y + ", z = " + z + ", sum = " + sum);

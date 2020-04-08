@@ -56,7 +56,7 @@ public class CircularModel extends Model<CircularModelConfiguration> {
 			
 			//System.out.println("Sample y: " + sample_y);
 			
-			double distance = Math.sqrt(Math.pow(x - sample_x, 2) + Math.pow(y - sample_y, 2) + Math.pow(z, 2));
+			double distance = Math.sqrt(Math.pow(x - sample_x, 2) + Math.pow(y - sample_y, 2) + Math.pow(z - 0, 2));
 			
 			//System.out.println("Square root: " + square_root);
 			
@@ -64,7 +64,7 @@ public class CircularModel extends Model<CircularModelConfiguration> {
 			
 			//System.out.println("Denominator: " + denominator);
 			
-			sum += heat * Math.exp(welding_speed / 2 / thermal_diffusivity * (x - distance)) / denominator;
+			sum += heat / denominator * Math.exp(welding_speed / 2 / thermal_diffusivity * (x - sample_x - distance));
 		}
 		
 		//System.out.println("Calculated temperature: x = " + x + ", y = " + y + ", z = " + z + ", sum = " + sum);
