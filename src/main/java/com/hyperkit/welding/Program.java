@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.DecimalFormat;
 
 import javax.swing.JButton;
@@ -22,6 +23,7 @@ import com.hyperkit.welding.configurations.Render2DConfiguration;
 import com.hyperkit.welding.configurations.Render3DConfiguration;
 import com.hyperkit.welding.configurations.SearchConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
+import com.hyperkit.welding.exporters.CSVExporter;
 import com.hyperkit.welding.generators.GeneratorXY;
 import com.hyperkit.welding.generators.GeneratorXZ;
 import com.hyperkit.welding.generators.GeneratorYZ;
@@ -232,6 +234,11 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							generator_yz.generateDataset(widest_x, dataset_yz_widest, progress);
 							generator_yz.generateDataset(deepest_x, dataset_yz_deepest, progress);
 							generator_yz.generateDataset(widest_x, deepest_x, dataset_yz, progress);
+							
+							// Export datasets
+							new CSVExporter().export(dataset_xy, new File("dataset_xy.csv"));
+							new CSVExporter().export(dataset_xz, new File("dataset_xz.csv"));
+							new CSVExporter().export(dataset_yz, new File("dataset_yz.csv"));
 							
 							// Render datasets
 							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xy);
