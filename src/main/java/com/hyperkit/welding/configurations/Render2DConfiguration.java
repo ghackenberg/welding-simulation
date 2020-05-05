@@ -1,10 +1,13 @@
 package com.hyperkit.welding.configurations;
 
 import com.hyperkit.welding.Configuration;
+import com.hyperkit.welding.annotations.BooleanParameter;
 import com.hyperkit.welding.annotations.IntegerParameter;
 import com.hyperkit.welding.annotations.Parameter;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class Render2DConfiguration extends Configuration {
@@ -75,6 +78,22 @@ public class Render2DConfiguration extends Configuration {
 	@IntegerParameter(min = 1)
 	public IntegerProperty xzSamplesProperty() {
 		return xzSamples;
+	}
+	
+	// Details
+	
+	private BooleanProperty details = new SimpleBooleanProperty(true);
+	
+	public boolean getDetails() {
+		return details.get();
+	}
+	public void setDetails(boolean details) {
+		this.details.set(details);
+	}
+	@Parameter(name = "Ausgangskurven", unit = "k.A.")
+	@BooleanParameter()
+	public BooleanProperty detailsProperty() {
+		return details;
 	}
 
 }

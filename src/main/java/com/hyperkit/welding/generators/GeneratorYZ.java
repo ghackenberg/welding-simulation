@@ -24,8 +24,8 @@ public class GeneratorYZ extends Generator2D {
 		XYSeries upper_widest_series = new XYSeries("B. (A)");
 		XYSeries lower_deepest_series = new XYSeries("T. (I)");
 		XYSeries upper_deepest_series = new XYSeries("T. (A)");
-		XYSeries lower_total_series = new XYSeries("G. (I)");
-		XYSeries upper_total_series = new XYSeries("G. (A)");
+		XYSeries lower_total_series = new XYSeries(configuration.getDetails() ? "G. (I)" : "Innen");
+		XYSeries upper_total_series = new XYSeries(configuration.getDetails() ? "G. (A)" : "Auﬂen");
 		
 		int samples = configuration.getYZSamples();
 		
@@ -121,10 +121,13 @@ public class GeneratorYZ extends Generator2D {
 
 		result.addSeries(lower_total_series);
 		result.addSeries(upper_total_series);
-		result.addSeries(lower_widest_series);
-		result.addSeries(upper_widest_series);
-		result.addSeries(lower_deepest_series);
-		result.addSeries(upper_deepest_series);
+		
+		if (configuration.getDetails()) {
+			result.addSeries(lower_widest_series);
+			result.addSeries(upper_widest_series);
+			result.addSeries(lower_deepest_series);
+			result.addSeries(upper_deepest_series);
+		}
 	}
 	
 	public void generateDataset(double x, XYSeriesCollection result, Progress progress) throws SearchException {

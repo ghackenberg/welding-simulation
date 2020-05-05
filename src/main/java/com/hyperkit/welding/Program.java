@@ -167,40 +167,52 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
+						// Disable button
+						button.setEnabled(false);
+						
 						try {
+							
+							// Perform calculation
+							
+							// Clean datasets
 							dataset_xy.removeAllSeries();
 							dataset_xz.removeAllSeries();
 							dataset_yz.removeAllSeries();
 							dataset_yz_widest.removeAllSeries();
 							dataset_yz_deepest.removeAllSeries();
 							
+							// Clean canvas
 							canvas.display();
 							
+							// Calcuate min_x
 							Range min_x = search.findMinimumX(search_configuration.getInitialPosition() / 10, 0, 0);
-							
 							JOptionPane.showMessageDialog(frame, "Untere X-Grenze gefunden bei X=" + FORMAT.format(min_x.getInnerValue() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
+							// Calculate max_x
 							Range max_x = search.findMaximumX(search_configuration.getInitialPosition() / 10, 0, 0);
-							
 							JOptionPane.showMessageDialog(frame, "Obere X-Grenze gefunden bei X=" + FORMAT.format(max_x.getOuterValue() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
+							// Calculate widest_x
 							double widest_x = search.findWidestX(min_x.getInnerValue(), max_x.getInnerValue());
 							
+							// Calculate max_y
 							Range max_y = search.findMaximumY(widest_x, 0);
-							
 							JOptionPane.showMessageDialog(frame, "Breiteste Stelle gefunden bei X=" + FORMAT.format(widest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
+							// Calculate deepest_x
 							double deepest_x = search.findDeepestX(min_x.getInnerValue(), max_x.getInnerValue());
 							
+							// Calculate min_z
 							Range min_z = search.findMinimumZ(deepest_x, 0);
-							
 							JOptionPane.showMessageDialog(frame, "Tiefste Stelle gefunden bei X=" + FORMAT.format(deepest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
+							// Propagate values
 							listener.setMinX(min_x);
 							listener.setMaxX(max_x);
 							listener.setWidestX(widest_x);
 							listener.setDeepestX(deepest_x);
 							
+							// Create progress tracker
 							Progress progress = new Progress() {
 								@Override
 								public void initialize(int total) {
@@ -214,25 +226,33 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 								}
 							};
 							
+							// Generate datasets
 							generator_xy.generateDataset(min_x, max_x, 0, dataset_xy, progress);
 							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz, progress);
 							generator_yz.generateDataset(widest_x, dataset_yz_widest, progress);
 							generator_yz.generateDataset(deepest_x, dataset_yz_deepest, progress);
 							generator_yz.generateDataset(widest_x, deepest_x, dataset_yz, progress);
 							
+							// Render datasets
 							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xy);
 							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xz);
 							new RendererYZ(chart_yz_panel, widest_x, deepest_x).run(min_x, max_x, max_y, min_z, dataset_yz);
 							
+							// Update canvas
 							canvas.display();
 							
 						} catch (SearchException e) {
+							
+							// Handle search exception
 							
 							JOptionPane.showMessageDialog(frame, e.getMessage(), "Berechnungsfehler", JOptionPane.ERROR_MESSAGE);
 							
 							e.printStackTrace();
 							
 						}
+						
+						// Enable button
+						button.setEnabled(true);
 					}
 				}).start();
 			}

@@ -16,6 +16,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,6 +33,7 @@ import com.hyperkit.welding.annotations.IntegerParameter;
 import com.hyperkit.welding.annotations.LongParameter;
 import com.hyperkit.welding.annotations.Parameter;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
@@ -112,7 +114,27 @@ public class Configurator {
 	
 					// Add value
 					
-					if (property instanceof IntegerProperty) {
+					if (property instanceof BooleanProperty) {
+						boolean value = (Boolean) property.getValue();
+						
+						JCheckBox checkbox = new JCheckBox("", value);
+						
+						checkbox.addActionListener(action -> {
+							((BooleanProperty) property).setValue(checkbox.isSelected());
+						});
+	
+						updateStyle(checkbox, Color.BLACK, GRAY_2);
+						
+						constraints.gridx = 1;
+						panel.add(checkbox, constraints);
+						
+						constraints.gridx = 2;
+						panel.add(createLimitLabel("k.A.", Color.BLACK, GRAY_2), constraints);
+						
+						constraints.gridx = 3;
+						panel.add(createLimitLabel("k.A.", Color.BLACK, GRAY_2), constraints);
+						
+					} else if (property instanceof IntegerProperty) {
 						IntegerParameter integer_parameter = method.getAnnotation(IntegerParameter.class);
 	
 						int value = (Integer) property.getValue();
