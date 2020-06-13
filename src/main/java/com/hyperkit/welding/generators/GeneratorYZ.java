@@ -3,6 +3,7 @@ package com.hyperkit.welding.generators;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import com.hyperkit.welding.Path;
 import com.hyperkit.welding.Progress;
 import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Search;
@@ -19,26 +20,15 @@ public class GeneratorYZ extends Generator2D {
 		this.configuration = configuration;
 	}
 	
-	public void generateDataset(double widest_x, double deepest_x, XYSeriesCollection result, Progress progress) throws SearchException {
-		XYSeries lower_widest_series = new XYSeries("B. (I)");
-		XYSeries upper_widest_series = new XYSeries("B. (A)");
-		XYSeries lower_deepest_series = new XYSeries("T. (I)");
-		XYSeries upper_deepest_series = new XYSeries("T. (A)");
-		XYSeries lower_total_series = new XYSeries(configuration.getDetails() ? "G. (I)" : "Innen");
-		XYSeries upper_total_series = new XYSeries(configuration.getDetails() ? "G. (A)" : "Auﬂen");
+	public void generateDataset(Path path_min_x, Range min_x, Range max_x, double widest_x, Range max_y, XYSeriesCollection result, Progress progress) throws SearchException {
+		XYSeries lower_total_series = new XYSeries("Innen");
+		XYSeries upper_total_series = new XYSeries("Auﬂen");
 		
 		int samples = configuration.getYZSamples();
 		
 		progress.initialize(samples + 1);
 		
-		Range y_range_widest = search.findMaximumY(widest_x, 0);
-		Range y_range_deepest = search.findMaximumY(deepest_x, 0);
-		
-		lower_widest_series.add(-y_range_widest.getInnerValue() * 10, 0);
-		upper_widest_series.add(-y_range_widest.getOuterValue() * 10, 0);
-		
-		lower_deepest_series.add(-y_range_deepest.getInnerValue() * 10, 0);
-		upper_deepest_series.add(-y_range_deepest.getOuterValue() * 10, 0);
+		Range y_range_widest = max_y;
 
 		lower_total_series.add(-y_range_widest.getInnerValue() * 10, 0);
 		upper_total_series.add(-y_range_widest.getOuterValue() * 10, 0);
@@ -53,22 +43,15 @@ public class GeneratorYZ extends Generator2D {
 			Range upper_z_range_opt = new Range(0, 0);
 			
 			for (int step = 0; step <= configuration.getYZXSamples(); step++) {
-				double x = widest_x + (deepest_x - widest_x) / configuration.getYZXSamples() * step;
+				double x = min_x.getInnerValue() + (max_x.getInnerValue() - min_x.getInnerValue()) / configuration.getYZXSamples() * step;
 				
-				Range y_range_current = search.findMaximumY(x, 0);
+				Range y_range_current = search.findMaximumY(x, path_min_x.calculateStartY(x), 0);
 				
 				if (y_range_current.getInnerValue() >= lower_y) {
 					Range lower_z_range;
 					
 					try {
-						lower_z_range = search.findMinimumZ(x, lower_y);
-						
-						if (step == 0) {
-							lower_widest_series.add(lower_y * 10, lower_z_range.getInnerValue() * 10);
-						}
-						if (step == configuration.getYZXSamples()) {
-							lower_deepest_series.add(lower_y * 10, lower_z_range.getInnerValue() * 10);
-						}
+						lower_z_range = search.findMinimumZ(x, lower_y, 0);
 					} catch (SearchException exception) {
 						lower_z_range = new Range(0, 0);
 					}
@@ -81,14 +64,7 @@ public class GeneratorYZ extends Generator2D {
 					Range upper_z_range;
 					
 					try {
-						upper_z_range = search.findMinimumZ(x, upper_y);
-						
-						if (step == 0) {
-							upper_widest_series.add(upper_y * 10, upper_z_range.getOuterValue() * 10);
-						}
-						if (step == configuration.getYZXSamples()) {
-							upper_deepest_series.add(upper_y * 10, upper_z_range.getOuterValue() * 10);
-						}
+						upper_z_range = search.findMinimumZ(x, upper_y, 0);
 					} catch (SearchException exception) {
 						upper_z_range = new Range(0, 0);
 					}
@@ -102,17 +78,11 @@ public class GeneratorYZ extends Generator2D {
 			lower_total_series.add(lower_y * 10, lower_z_range_opt.getInnerValue() * 10);
 			upper_total_series.add(upper_y * 10, upper_z_range_opt.getOuterValue() * 10);
 			
-			System.out.println("Sample: " + sample + " " + lower_y + " " + lower_z_range_opt.getInnerValue());
-			System.out.println("Sample: " + sample + " " + upper_y + " " + upper_z_range_opt.getOuterValue());
+			// System.out.println("Sample: " + sample + " " + lower_y + " " + lower_z_range_opt.getInnerValue());
+			// System.out.println("Sample: " + sample + " " + upper_y + " " + upper_z_range_opt.getOuterValue());
 			
 			progress.update(sample + 1, samples + 1);
 		}
-		
-		lower_widest_series.add(y_range_widest.getInnerValue() * 10, 0);
-		upper_widest_series.add(y_range_widest.getOuterValue() * 10, 0);
-		
-		lower_deepest_series.add(y_range_deepest.getInnerValue() * 10, 0);
-		upper_deepest_series.add(y_range_deepest.getOuterValue() * 10, 0);
 		
 		lower_total_series.add(y_range_widest.getInnerValue() * 10, 0);
 		upper_total_series.add(y_range_widest.getOuterValue() * 10, 0);
@@ -121,16 +91,13 @@ public class GeneratorYZ extends Generator2D {
 
 		result.addSeries(lower_total_series);
 		result.addSeries(upper_total_series);
-		
-		if (configuration.getDetails()) {
-			result.addSeries(lower_widest_series);
-			result.addSeries(upper_widest_series);
-			result.addSeries(lower_deepest_series);
-			result.addSeries(upper_deepest_series);
-		}
 	}
 	
-	public void generateDataset(double x, XYSeriesCollection result, Progress progress) throws SearchException {
+	public void generateDataset(double x, double y, XYSeriesCollection result, Progress progress) throws SearchException {
+		generateDataset(x, search.findMaximumY(x, y, 0), result, progress);
+	}
+	
+	public void generateDataset(double x, Range max_y, XYSeriesCollection result, Progress progress) throws SearchException {
 		XYSeries lower_series = new XYSeries("Innen");
 		XYSeries upper_series = new XYSeries("Auﬂen");
 		
@@ -138,20 +105,17 @@ public class GeneratorYZ extends Generator2D {
 		
 		progress.initialize(samples + 1);
 		
-		Range y_range = search.findMaximumY(x, 0);
-		
-		System.out.println("[RendererYZ.generateDataset(" + x + ", progress)] y_range = " + y_range);
-		System.out.println("[RendererYZ.generateDataset(" + x + ", progress)]" + search.getModel().calculateTemperature(x, y_range.getInnerValue(), 0));
-		System.out.println("[RendererYZ.generateDataset(" + x + ", progress)]" + search.getModel().calculateTemperature(x, y_range.getOuterValue(), 0));
+		// System.out.println("[RendererYZ.generateDataset(" + x + ", progress)] " + search.getModel().calculateTemperature(x, y_range.getInnerValue(), 0));
+		// System.out.println("[RendererYZ.generateDataset(" + x + ", progress)] " + search.getModel().calculateTemperature(x, y_range.getOuterValue(), 0));
 		
 		for (int sample = 0; sample < samples; sample++) {
-			double lower_y = Math.abs(y_range.getInnerValue()) * 2 / samples * sample - Math.abs(y_range.getInnerValue());
-			double upper_y = Math.abs(y_range.getOuterValue()) * 2 / samples * sample - Math.abs(y_range.getOuterValue());
+			double lower_y = Math.abs(max_y.getInnerValue()) * 2 / samples * sample - Math.abs(max_y.getInnerValue());
+			double upper_y = Math.abs(max_y.getOuterValue()) * 2 / samples * sample - Math.abs(max_y.getOuterValue());
 			
 			Range lower_z_range;
 			
 			try {
-				lower_z_range = search.findMinimumZ(x, lower_y);
+				lower_z_range = search.findMinimumZ(x, lower_y, 0);
 			} catch (SearchException exception) {
 				lower_z_range = new Range(0, 0);
 			}
@@ -159,7 +123,7 @@ public class GeneratorYZ extends Generator2D {
 			Range upper_z_range;
 			
 			try {
-				upper_z_range = search.findMinimumZ(x, upper_y);
+				upper_z_range = search.findMinimumZ(x, upper_y, 0);
 			} catch (SearchException exception) {
 				upper_z_range = new Range(0, 0);
 			}
@@ -173,13 +137,13 @@ public class GeneratorYZ extends Generator2D {
 			progress.update(sample + 1, samples + 1);
 		}
 		
-		lower_series.add(Math.abs(y_range.getInnerValue()) * 10, 0);
-		upper_series.add(Math.abs(y_range.getOuterValue()) * 10, 0);
+		lower_series.add(Math.abs(max_y.getInnerValue()) * 10, 0);
+		upper_series.add(Math.abs(max_y.getOuterValue()) * 10, 0);
 		
 		XYSeries zero_series = new XYSeries("Material");
 		
-		zero_series.add(-Math.max(Math.abs(y_range.getInnerValue()), y_range.getOuterValue()) * 10, 0);
-		zero_series.add(+Math.max(Math.abs(y_range.getInnerValue()), y_range.getOuterValue()) * 10, 0);
+		zero_series.add(-Math.max(Math.abs(max_y.getInnerValue()), max_y.getOuterValue()) * 10, 0);
+		zero_series.add(+Math.max(Math.abs(max_y.getInnerValue()), max_y.getOuterValue()) * 10, 0);
 		
 		result.addSeries(lower_series);
 		result.addSeries(upper_series);

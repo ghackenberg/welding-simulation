@@ -1,12 +1,12 @@
 package com.hyperkit.welding.renderers;
 
-import com.hyperkit.welding.Range;
-
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Generator;
+import com.hyperkit.welding.Path;
+import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Search;
 import com.hyperkit.welding.configurations.Render3DConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
@@ -26,7 +26,7 @@ public class Renderer3D extends Generator {
 		this.configuration = configuration;
 	}
 
-	public void render(Range min_x, Range max_x, double widest_x, double deepest_x, XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz_widest, XYSeriesCollection dataset_yz_deepest, int width, int height, GLAutoDrawable drawable, GLU glu) {
+	public void render(Path path_min_x, Range min_x, Range max_x, double widest_x, Range max_y, double deepest_x, XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz_widest, XYSeriesCollection dataset_yz_deepest, int width, int height, GLAutoDrawable drawable, GLU glu) {
 
 		try {
 
@@ -44,8 +44,8 @@ public class Renderer3D extends Generator {
 
 			// Find ranges
 			
-			Range range_y = search.findMaximumY(widest_x, 0);
-			Range range_z = search.findMinimumZ(deepest_x, 0);
+			Range range_y = max_y;
+			Range range_z = search.findMinimumZ(deepest_x, path_min_x.calculateStartY(deepest_x), 0);
 
 			// Change to projection matrix
 

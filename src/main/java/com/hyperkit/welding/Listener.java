@@ -22,11 +22,15 @@ public class Listener implements GLEventListener {
 	
 	private Renderer3D renderer;
 	
+	private Path path_min_x;
+	
 	private Range min_x;
 	private Range max_x;
 	
 	private double widest_x;
 	private double deepest_x;
+	
+	private Range max_y;
 	
 	public Listener(XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz_widest, XYSeriesCollection dataset_yz_deepest, Renderer3D renderer) {
 		this.dataset_xy = dataset_xy;
@@ -35,6 +39,10 @@ public class Listener implements GLEventListener {
 		this.dataset_yz_deepest = dataset_yz_deepest;
 		
 		this.renderer = renderer;
+	}
+	
+	public void setPathMinX(Path path_min_x) {
+		this.path_min_x = path_min_x;
 	}
 	
 	public void setMinX(Range min_x) {
@@ -51,6 +59,10 @@ public class Listener implements GLEventListener {
 	
 	public void setDeepestX(double deepest_x) {
 		this.deepest_x = deepest_x;
+	}
+	
+	public void setMaxY(Range max_y) {
+		this.max_y = max_y;
 	}
 
 	@Override
@@ -70,7 +82,7 @@ public class Listener implements GLEventListener {
 	
 	@Override
 	public void display(GLAutoDrawable drawable) {
-		renderer.render(min_x, max_x, widest_x, deepest_x, dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, width, height, drawable, glu);
+		renderer.render(path_min_x, min_x, max_x, widest_x, max_y, deepest_x, dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, width, height, drawable, glu);
 	}
 	
 	@Override

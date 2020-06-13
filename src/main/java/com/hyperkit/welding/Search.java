@@ -25,41 +25,107 @@ public class Search {
 		return configuration;
 	}
 	
-	public Range findMaximumY(double x, double z) throws SearchException {
+	public Range findMinimumY(final double x, final double start_y, final double z) throws SearchException {
 		
-		System.out.println("[Search.findMaximumY(" + x + ", " + z + ")] Starting ...");
+		// System.out.println("[Search.findMinimumY(" + x + ", " + start_y + ", " + z + ")] Starting ...");
+		
+		final long outer_timestamp = System.currentTimeMillis();
+		
+		// Initialize the search variables
+		
+		final double limit_temperature = configuration.getLimitTemperature();
+		final double temperature_threshold = configuration.getTemperatureThershold();		
+		double step_size = configuration.getInitialStepSize();
+		
+		double current_y = start_y;
+		double previous_y = start_y;
+		
+		double current_temperature = model.calculateTemperature(x, current_y, z);
+		double previous_temperature = model.calculateTemperature(x, previous_y, z);
+		
+		if (current_temperature < limit_temperature) {
+			throw new SearchException("Die initiale Position bei der Suche der minmalen Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+		}
+		
+		// Execute the search
+		
+		do {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
+				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der minimalen Y-Grenze überschritten. Bitte passen Sie die Parameter an.");
+			}
+			
+			final long inner_timestamp = System.currentTimeMillis();
+			
+			if (current_temperature > limit_temperature) {
+				do {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+						throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der minimalen Y-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+					}
+					previous_y = current_y;
+					previous_temperature = current_temperature;
+					
+					current_y -= step_size;
+					current_temperature = model.calculateTemperature(x, current_y, z);
+				} while (current_temperature > limit_temperature);
+			} else if (current_temperature < limit_temperature) {
+				do {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+						throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der minimalen Y-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+					}
+					previous_y = current_y;
+					previous_temperature = current_temperature;
+					
+					current_y += step_size;
+					current_temperature = model.calculateTemperature(x, current_y, z);
+				} while (current_temperature < limit_temperature);
+			}
+			
+			step_size /= 10.0;
+		} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
+		
+		final double inner_y = Math.max(previous_y, current_y);
+		final double outer_y = Math.min(previous_y,  current_y);
+		
+		// System.out.println("[Search.findMinimumY(" + x + ", " + start_y + ", " + z + ")] Returning [" + inner_y + ", " + outer_y + "]");
+		
+		return new Range(inner_y, outer_y);
+	}
+	
+	public Range findMaximumY(final double x, final double start_y, final double z) throws SearchException {
+		
+		// System.out.println("[Search.findMaximumY(" + x + ", " + start_y + ", " + z + ")] Starting ...");
 		
 		long outer_timestamp = System.currentTimeMillis();
 		
 		// Initialize the search variables
 		
-		double limit_temperature = configuration.getLimitTemperature();
-		double temperature_threshold = configuration.getTemperatureThershold();		
+		final double limit_temperature = configuration.getLimitTemperature();
+		final double temperature_threshold = configuration.getTemperatureThershold();		
 		double step_size = configuration.getInitialStepSize();
 		
-		double current_y = 0;
-		double previous_y = 0;
+		double current_y = start_y;
+		double previous_y = start_y;
 		
 		double current_temperature = model.calculateTemperature(x, current_y, z);
 		double previous_temperature = model.calculateTemperature(x, previous_y, z);
 		
-		if (current_temperature < limit_temperature - temperature_threshold) {
-			throw new SearchException("Die initiale Position bei der Suche der Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+		if (current_temperature < limit_temperature) {
+			throw new SearchException("Die initiale Position bei der Suche der maximalen Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
 		}
 		
 		// Execute the search
 		
-		while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold) {
+		do {
 			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
-				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der Y-Grenze überschritten. Bitte passen Sie die Parameter an.");
+				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der maximalen Y-Grenze überschritten. Bitte passen Sie die Parameter an.");
 			}
 			
-			long inner_timestamp = System.currentTimeMillis();
+			final long inner_timestamp = System.currentTimeMillis();
 			
 			if (current_temperature > limit_temperature) {
 				do {
 					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
-						throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der Y-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+						throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der maximalen Y-Grenze überschritten. Bitte passen Sie die Parameter an.");	
 					}
 					previous_y = current_y;
 					previous_temperature = current_temperature;
@@ -70,7 +136,7 @@ public class Search {
 			} else if (current_temperature < limit_temperature) {
 				do {
 					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
-						throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der Y-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+						throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der maximalen Y-Grenze überschritten. Bitte passen Sie die Parameter an.");	
 					}
 					previous_y = current_y;
 					previous_temperature = current_temperature;
@@ -81,46 +147,46 @@ public class Search {
 			}
 			
 			step_size /= 10.0;
-		}
+		} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
 		
-		double inner_y = Math.min(previous_y, current_y);
-		double outer_y = Math.max(previous_y,  current_y);
+		final double inner_y = Math.min(previous_y, current_y);
+		final double outer_y = Math.max(previous_y,  current_y);
 		
-		System.out.println("[Search.findMaximumY(" + x + ", " + z + ")] Returning [" + inner_y + ", " + outer_y + "]");
+		// System.out.println("[Search.findMaximumY(" + x + ", " + start_y + ", " + z + ")] Returning [" + inner_y + ", " + outer_y + "]");
 		
 		return new Range(inner_y, outer_y);
 	}
 	
-	public Range findMinimumZ(double x, double y) throws SearchException {
+	public Range findMinimumZ(final double x, final double y, final double start_z) throws SearchException {
 		
-		System.out.println("[Search.findMinimumZ(" + x + ", " + y + ")] Starting ...");
+		// System.out.println("[Search.findMinimumZ(" + x + ", " + y + ", " + start_z + ")] Starting ...");
 		
-		long outer_timestamp = System.currentTimeMillis();
+		final long outer_timestamp = System.currentTimeMillis();
 		
 		// Initialize the search variables
 		
-		double limit_temperature = configuration.getLimitTemperature();
-		double temperature_threshold = configuration.getTemperatureThershold();		
+		final double limit_temperature = configuration.getLimitTemperature();
+		final double temperature_threshold = configuration.getTemperatureThershold();		
 		double step_size = configuration.getInitialStepSize();
 		
-		double current_z = 0;
-		double previous_z = 0;
+		double current_z = start_z;
+		double previous_z = start_z;
 		
 		double current_temperature = model.calculateTemperature(x, y, current_z);
 		double previous_temperature = model.calculateTemperature(x, y, previous_z);
 
-		if (current_temperature < limit_temperature - temperature_threshold) {
+		if (current_temperature < limit_temperature) {
 			throw new SearchException("Die initiale Position bei der Suche der Z-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
 		}
 		
 		// Execute the search
 		
-		while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold) {
+		do {
 			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der Z-Grenze überschritten. Bitte passen Sie die Parameter an.");
 			}
 			
-			long inner_timestamp = System.currentTimeMillis();
+			final long inner_timestamp = System.currentTimeMillis();
 			
 			if (current_temperature > limit_temperature) {
 				do {
@@ -147,92 +213,128 @@ public class Search {
 			}
 			
 			step_size /= 10.0;
-		}
+		} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
 		
-		double outer_z = Math.min(previous_z, current_z);
-		double inner_z = Math.max(previous_z,  current_z);
+		final double outer_z = Math.min(previous_z, current_z);
+		final double inner_z = Math.max(previous_z,  current_z);
 		
-		System.out.println("[Search.findMinimumZ(" + x + ", " + y + ")] Returning [" + inner_z + ", " + outer_z + "]");
+		// System.out.println("[Search.findMinimumZ(" + x + ", " + y + ", " + start_z + ")] Returning [" + inner_z + ", " + outer_z + "]");
 		
 		return new Range(inner_z, outer_z);
 	}
 	
-	public Range findMinimumX(double start_x, double y, double z) throws SearchException {
+	public Path findMinimumX(final double start_x, final double start_y, final double z) throws SearchException {
 		
-		System.out.println("[Search.findMinimumX(" + y + ", " + z + ")] Starting ...");
+		// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Starting ...");
 		
-		long outer_timestamp = System.currentTimeMillis();
+		final long outer_timestamp = System.currentTimeMillis();
 		
 		// Initialize the search variables
 		
-		double limit_temperature = configuration.getLimitTemperature();
-		double temperature_threshold = configuration.getTemperatureThershold();		
+		final double limit_temperature = configuration.getLimitTemperature();
+		final double temperature_threshold = configuration.getTemperatureThershold();		
 		double step_size = configuration.getInitialStepSize();
 		
+		double origin_x = start_x;
 		double current_x = start_x;
 		double previous_x = start_x;
 		
-		double current_temperature = model.calculateTemperature(current_x, y, z);
-		double previous_temperature = model.calculateTemperature(previous_x, y, z);
+		double current_y = start_y;
+		
+		double current_temperature = model.calculateTemperature(current_x, current_y, z);
+		double previous_temperature = model.calculateTemperature(previous_x, current_y, z);
 
-		if (current_temperature < limit_temperature - temperature_threshold) {
+		if (current_temperature < limit_temperature) {
 			throw new SearchException("Die initiale Position bei der Suche der unteren X-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
 		}
 		
+		Path path = new Path();
+		
 		// Execute the search
 		
-		while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold) {
-			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
-				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");
+		while (true) {			
+			do {
+				if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
+					throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");
+				}
+				
+				final long inner_timestamp = System.currentTimeMillis();
+				
+				if (current_temperature > limit_temperature) {
+					do {
+						if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+							throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+						}
+						previous_x = current_x;
+						previous_temperature = current_temperature;
+						
+						current_x -= step_size;
+						current_temperature = model.calculateTemperature(current_x, current_y, z);
+					} while (current_temperature > limit_temperature);
+				} else if (current_temperature < limit_temperature) {
+					do {
+						if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+							throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+						}
+						previous_x = current_x;
+						previous_temperature = current_temperature;
+						
+						current_x += step_size;
+						current_temperature = model.calculateTemperature(current_x, current_y, z);
+					} while (current_temperature < limit_temperature);
+				}
+				
+				step_size /= 10.0;
+			} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
+
+			Span span = new Span(origin_x, new Range(Math.max(previous_x,  current_x), Math.min(previous_x, current_x)), current_y, z);
+			
+			System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Adding span " + path.getSpans().size() + " = " + span);
+			
+			path.getSpans().add(span);
+			
+			final double maximum_y = findMaximumY(Math.max(previous_x,  current_x), current_y, z).getInnerValue();
+			final double next_y = findDeepestY(Math.max(previous_x,  current_x), 0, maximum_y);
+			
+			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Previous x = " + previous_x);
+			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Current x = " + current_x);
+			
+			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Current y = " + current_y);
+			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Maximum y = " + maximum_y);
+			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Next y = " + next_y);
+			
+			if (Math.abs(next_y - current_y) > 0.000000001) {
+				origin_x = Math.max(previous_x,  current_x);
+				
+				current_y = next_y;
+				
+				current_temperature = model.calculateTemperature(current_x, current_y, z);
+				previous_temperature = model.calculateTemperature(previous_x, current_y, z);
+				
+				// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Current temperature = " + current_temperature);
+				// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Previous temperature = " + previous_temperature);
+				
+				step_size = configuration.getInitialStepSize();
+			} else {
+				break;
 			}
-			
-			long inner_timestamp = System.currentTimeMillis();
-			
-			if (current_temperature > limit_temperature) {
-				do {
-					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
-						throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
-					}
-					previous_x = current_x;
-					previous_temperature = current_temperature;
-					
-					current_x -= step_size;
-					current_temperature = model.calculateTemperature(current_x, y, z);
-				} while (current_temperature > limit_temperature);
-			} else if (current_temperature < limit_temperature) {
-				do {
-					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
-						throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
-					}
-					previous_x = current_x;
-					previous_temperature = current_temperature;
-					
-					current_x += step_size;
-					current_temperature = model.calculateTemperature(current_x, y, z);
-				} while (current_temperature < limit_temperature);
-			}
-			
-			step_size /= 10.0;
 		}
 		
-		double outer_x = Math.min(previous_x, current_x);
-		double inner_x = Math.max(previous_x,  current_x);
+		// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Returning " + path);
 		
-		System.out.println("[Search.findMinimumX(" + y + ", " + z + ")] Returning [" + inner_x + ", " + outer_x + "]");
-		
-		return new Range(inner_x, outer_x);
+		return path;
 	}
 	
-	public Range findMaximumX(double start_x, double y, double z) throws SearchException {
+	public Range findMaximumX(final double start_x, final double y, final double z) throws SearchException {
 		
-		System.out.println("[Search.findMaximumX(" + y + ", " + z + ")] Starting ...");
+		// System.out.println("[Search.findMaximumX(" + start_x + ", " + y + ", " + z + ")] Starting ...");
 		
-		long outer_timestamp = System.currentTimeMillis();
+		final long outer_timestamp = System.currentTimeMillis();
 		
 		// Initialize the search variables
 		
-		double limit_temperature = configuration.getLimitTemperature();
-		double temperature_threshold = configuration.getTemperatureThershold();		
+		final double limit_temperature = configuration.getLimitTemperature();
+		final double temperature_threshold = configuration.getTemperatureThershold();		
 		double step_size = configuration.getInitialStepSize();
 		
 		double current_x = start_x;
@@ -241,18 +343,18 @@ public class Search {
 		double current_temperature = model.calculateTemperature(current_x, y, z);
 		double previous_temperature = model.calculateTemperature(previous_x, y, z);
 
-		if (current_temperature < limit_temperature - temperature_threshold) {
+		if (current_temperature < limit_temperature) {
 			throw new SearchException("Die initiale Position bei der Suche der oberen X-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
 		}
 		
 		// Execute the search
 		
-		while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold) {
+		do {
 			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
 				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der oberen X-Grenze überschritten. Bitte passen Sie die Parameter an.");
 			}
 			
-			long inner_timestamp = System.currentTimeMillis();
+			final long inner_timestamp = System.currentTimeMillis();
 			
 			if (current_temperature > limit_temperature) {
 				do {
@@ -279,31 +381,34 @@ public class Search {
 			}
 			
 			step_size /= 10.0;
-		}
+		} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
 		
-		double inner_x = Math.min(previous_x, current_x);
-		double outer_x = Math.max(previous_x,  current_x);
+		final double inner_x = Math.min(previous_x, current_x);
+		final double outer_x = Math.max(previous_x,  current_x);
 		
-		System.out.println("[Search.findMaximumX(" + y + ", " + z + ")] Returning [" + inner_x + ", " + outer_x + "]");
+		// System.out.println("[Search.findMaximumX(" + start_x + ", " + y + ", " + z + ")] Returning [" + inner_x + ", " + outer_x + "]");
 		
 		return new Range(inner_x, outer_x);
 	}
 	
-	public double findWidestX(double min_x, double max_x) throws SearchException {
+	public double findWidestX(final double min_x, final double max_x, final double y, final double z) throws SearchException {
+		// System.out.println("[Search.findWidestX(" + min_x + ", " + max_x + ", " + z + ")]");
 		if (max_x - min_x > 0.000000001) {
 			final int steps = 10;
 			
-			double delta_x = max_x - min_x;
-			double step_x = delta_x / steps;
+			final double delta_x = max_x - min_x;
+			final double step_x = delta_x / steps;
 			
 			double opt_x = min_x;
-			double opt_w = findMaximumY(opt_x, 0).getInnerValue();
+			double opt_w = findMaximumY(opt_x, y, z).getInnerValue();
 			
 			for (int step = 1; step <= steps; step++) {
-				double next_x = min_x + step_x * step;
-				double next_t = model.calculateTemperature(next_x, 0, 0);
+				final double next_x = min_x + step_x * step;
+				final double next_t = model.calculateTemperature(next_x, y, z);
+				
 				if (next_t > configuration.getLimitTemperature() + configuration.getTemperatureThershold()) {
-					double next_w = findMaximumY(next_x, 0).getInnerValue();
+					final double next_w = findMaximumY(next_x, y, z).getInnerValue();
+					
 					if (next_w > opt_w) {
 						opt_x = next_x;
 						opt_w = next_w;
@@ -311,27 +416,30 @@ public class Search {
 				}
 			}
 			
-			return findWidestX(opt_x - step_x, opt_x + step_x);
+			return findWidestX(Math.max(opt_x - step_x, min_x), Math.min(opt_x + step_x, max_x), y, z);
 		} else {
 			return (min_x + max_x) / 2;
 		}
 	}
 	
-	public double findDeepestX(double min_x, double max_x) throws SearchException {
+	public double findDeepestX(final double min_x, final double max_x, final double y) throws SearchException {
+		// System.out.println("[Search.findDeepestX(" + min_x + ", " + max_x + ", " + y + ")]");
 		if (max_x - min_x > 0.000000001) {
 			final int steps = 10;
 			
-			double delta_x = max_x - min_x;
-			double step_x = delta_x / steps;
+			final double delta_x = max_x - min_x;
+			final double step_x = delta_x / steps;
 			
 			double opt_x = min_x;
-			double opt_d = findMinimumZ(opt_x, 0).getInnerValue();
+			double opt_d = findMinimumZ(opt_x, y, 0).getInnerValue();
 			
 			for (int step = 0; step <= steps; step++) {
-				double next_x = min_x + step_x * step;
-				double next_t = model.calculateTemperature(next_x, 0, 0);
+				final double next_x = min_x + step_x * step;
+				final double next_t = model.calculateTemperature(next_x, y, 0);
+				
 				if (next_t > configuration.getLimitTemperature() + configuration.getTemperatureThershold()) {
-					double next_d = findMinimumZ(next_x, 0).getInnerValue();
+					final double next_d = findMinimumZ(next_x, y, 0).getInnerValue();
+					
 					if (next_d < opt_d) {
 						opt_x = next_x;
 						opt_d = next_d;
@@ -339,9 +447,40 @@ public class Search {
 				}
 			}
 			
-			return findDeepestX(opt_x - step_x, opt_x + step_x);
+			return findDeepestX(Math.max(opt_x - step_x, min_x), Math.min(opt_x + step_x, max_x), y);
 		} else {
 			return (min_x + max_x) / 2;
+		}
+	}
+	
+	public double findDeepestY(final double x, final double min_y, final double max_y) throws SearchException {
+		// System.out.println("[Search.findDeepestY(" + x + ", " + min_y + ", " + max_y + ")]");
+		if (max_y - min_y > 0.000000001) {
+			final int steps = 10;
+			
+			final double delta_y = max_y - min_y;
+			final double step_y = delta_y / steps;
+			
+			double opt_y = max_y;
+			double opt_d = findMinimumZ(x, opt_y, 0).getInnerValue();
+			
+			for (int step = 0; step <= steps; step++) {
+				final double next_y = min_y + step_y * step;
+				final double next_t = model.calculateTemperature(x, next_y, 0);
+				
+				if (next_t > configuration.getLimitTemperature() + configuration.getTemperatureThershold()) {
+					final double next_d = findMinimumZ(x, next_y, 0).getInnerValue();
+					
+					if (next_d < opt_d) {
+						opt_y = next_y;
+						opt_d = next_d;
+					}
+				}
+			}
+			
+			return findDeepestY(x, Math.max(opt_y - step_y, min_y), Math.min(opt_y + step_y, max_y));
+		} else {
+			return (min_y + max_y) / 2;
 		}
 	}
 	

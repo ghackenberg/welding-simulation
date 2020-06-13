@@ -14,7 +14,7 @@ public class CircularModelConfiguration extends ModelConfiguration {
 	
 	// Samples
 	
-	private IntegerProperty samples = new SimpleIntegerProperty(20);
+	private IntegerProperty samples = new SimpleIntegerProperty(100);
 	
 	public int getSamples() {
 		return samples.get();
