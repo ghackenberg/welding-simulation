@@ -66,7 +66,7 @@ public class Renderer3D extends Generator {
 
 			float widthHeightRatio = (float) width / (float) height;
 			glu.gluPerspective(45, widthHeightRatio, 0.001, 1000);
-			glu.gluLookAt(camera_x, camera_y, camera_z, (widest_x + deepest_x) / 2, range_z.getOuterValue() / 2, 0, 0, 1, 0);
+			glu.gluLookAt(camera_x, camera_y, camera_z, (min_x.getInnerValue() + max_x.getInnerValue()) / 2, range_z.getOuterValue() / 2, 0, 0, 1, 0);
 
 			// Change back to model view matrix
 
