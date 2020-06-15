@@ -58,6 +58,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 		
 		XYSeriesCollection dataset_xy = new XYSeriesCollection();
 		XYSeriesCollection dataset_xz = new XYSeriesCollection();
+		XYSeriesCollection dataset_xz_center = new XYSeriesCollection();
 		XYSeriesCollection dataset_yz = new XYSeriesCollection();
 		XYSeriesCollection dataset_yz_widest = new XYSeriesCollection();
 		XYSeriesCollection dataset_yz_deepest = new XYSeriesCollection();
@@ -98,7 +99,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 		GLCapabilities capabilities = new GLCapabilities(profile);
 		GLCanvas canvas = new GLCanvas(capabilities);
 
-		Listener listener = new Listener(dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, render_3d);
+		Listener listener = new Listener(dataset_xy, dataset_xz_center, dataset_yz_widest, dataset_yz_deepest, render_3d);
 		canvas.addGLEventListener(listener);
 
 		// Create progress bar
@@ -179,6 +180,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							// Clean datasets
 							dataset_xy.removeAllSeries();
 							dataset_xz.removeAllSeries();
+							dataset_xz_center.removeAllSeries();
 							dataset_yz.removeAllSeries();
 							dataset_yz_widest.removeAllSeries();
 							dataset_yz_deepest.removeAllSeries();
@@ -187,7 +189,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							canvas.display();
 							
 							// Calcuate min_x							
-							Path path_min_x = search.findMinimumX(search_configuration.getInitialPosition() / 10, 0, 0);
+							Path path_min_x = search.findMinimumXPath(search_configuration.getInitialPosition() / 10, 0, 0);
 							Range min_x = path_min_x.getLastSpan().getExtremeX();
 							JOptionPane.showMessageDialog(frame, "Untere X-Grenze gefunden bei X=" + FORMAT.format(min_x.getInnerValue() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
@@ -275,10 +277,11 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 							// Generate datasets
 							generator_xy.generateDataset(path_min_x, max_x, 0, dataset_xy, progress);
-							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz, progress);
+							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz_center, progress);
+							generator_xz.generateDataset(path_min_x, min_x, max_x, dataset_xz, progress);
 							generator_yz.generateDataset(widest_x, max_y, dataset_yz_widest, progress);
 							generator_yz.generateDataset(deepest_x, path_min_x.calculateStartY(deepest_x), dataset_yz_deepest, progress);
-							generator_yz.generateDataset(path_min_x, min_x, max_x, widest_x, max_y, dataset_yz, progress);
+							generator_yz.generateDataset(path_min_x, min_x, max_x, max_y, dataset_yz, progress);
 							
 							// Export datasets
 							new CSVExporter().export(dataset_xy, new File("dataset_xy.csv"));

@@ -3,6 +3,7 @@ package com.hyperkit.welding.generators;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import com.hyperkit.welding.Path;
 import com.hyperkit.welding.Progress;
 import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Search;
@@ -17,6 +18,50 @@ public class GeneratorXZ extends Generator2D {
 	public GeneratorXZ(Search search, Render2DConfiguration configuration) {
 		this.search = search;
 		this.configuration = configuration;
+	}
+	
+	public void generateDataset(Path path_min_x, Range min_x, Range max_x, XYSeriesCollection result, Progress progress) throws SearchException {
+		XYSeries lower_total_series = new XYSeries("Innen");
+		XYSeries upper_total_series = new XYSeries("Auﬂen");
+		
+		int samples = configuration.getXZSamples();
+		
+		progress.initialize(samples + 1);
+
+		lower_total_series.add(min_x.getInnerValue() * 10, 0);
+		upper_total_series.add(min_x.getOuterValue() * 10, 0);
+		
+		progress.update(1, samples + 1);
+		
+		for (int sample = 1; sample < samples; sample++) {
+			double lower_x = (max_x.getInnerValue() - min_x.getInnerValue()) / samples * sample + min_x.getInnerValue();
+			double upper_x = (max_x.getOuterValue() - min_x.getOuterValue()) / samples * sample + min_x.getOuterValue();
+			
+			double lower_max_y = search.findMaximumY(lower_x, path_min_x.calculateStartY(lower_x), 0).getInnerValue();
+			double upper_max_y = search.findMaximumY(upper_x, path_min_x.calculateStartY(upper_x), 0).getInnerValue();
+			
+			double lower_y = search.findDeepestY(lower_x, 0, lower_max_y);
+			double upper_y = search.findDeepestY(upper_x, 0, upper_max_y);
+			
+			Range lower_z_range_opt = search.findMinimumZ(lower_x, lower_y, 0);
+			Range upper_z_range_opt = search.findMinimumZ(upper_x, upper_y, 0);
+			
+			lower_total_series.add(lower_x * 10, lower_z_range_opt.getInnerValue() * 10);
+			upper_total_series.add(upper_x * 10, upper_z_range_opt.getOuterValue() * 10);
+			
+			// System.out.println("Sample: " + sample + " " + lower_y + " " + lower_z_range_opt.getInnerValue());
+			// System.out.println("Sample: " + sample + " " + upper_y + " " + upper_z_range_opt.getOuterValue());
+			
+			progress.update(sample + 1, samples + 1);
+		}
+		
+		lower_total_series.add(max_x.getInnerValue() * 10, 0);
+		upper_total_series.add(max_x.getOuterValue() * 10, 0);
+
+		progress.update(samples + 1, samples + 1);
+
+		result.addSeries(lower_total_series);
+		result.addSeries(upper_total_series);
 	}
 	
 	public void generateDataset(Range min_x, Range max_x, double y, XYSeriesCollection result, Progress progress) throws SearchException {

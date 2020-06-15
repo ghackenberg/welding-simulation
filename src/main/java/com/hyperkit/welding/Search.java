@@ -44,7 +44,7 @@ public class Search {
 		double previous_temperature = model.calculateTemperature(x, previous_y, z);
 		
 		if (current_temperature < limit_temperature) {
-			throw new SearchException("Die initiale Position bei der Suche der minmalen Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+			throw new SearchException("Die initiale Position bei der Suche der minmalen Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie die Parameter an.");
 		}
 		
 		// Execute the search
@@ -110,7 +110,7 @@ public class Search {
 		double previous_temperature = model.calculateTemperature(x, previous_y, z);
 		
 		if (current_temperature < limit_temperature) {
-			throw new SearchException("Die initiale Position bei der Suche der maximalen Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+			throw new SearchException("Die initiale Position bei der Suche der maximalen Y-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie die Parameter an.");
 		}
 		
 		// Execute the search
@@ -176,7 +176,7 @@ public class Search {
 		double previous_temperature = model.calculateTemperature(x, y, previous_z);
 
 		if (current_temperature < limit_temperature) {
-			throw new SearchException("Die initiale Position bei der Suche der Z-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+			throw new SearchException("Die initiale Position bei der Suche der Z-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie die Parameter an.");
 		}
 		
 		// Execute the search
@@ -223,7 +223,73 @@ public class Search {
 		return new Range(inner_z, outer_z);
 	}
 	
-	public Path findMinimumX(final double start_x, final double start_y, final double z) throws SearchException {
+	public Range findMinimumX(final double start_x, final double y, final double z) throws SearchException {
+		
+		// System.out.println("[Search.findMinimumY(" + x + ", " + start_y + ", " + z + ")] Starting ...");
+		
+		final long outer_timestamp = System.currentTimeMillis();
+		
+		// Initialize the search variables
+		
+		final double limit_temperature = configuration.getLimitTemperature();
+		final double temperature_threshold = configuration.getTemperatureThershold();		
+		double step_size = configuration.getInitialStepSize();
+		
+		double current_x = start_x;
+		double previous_x = start_x;
+		
+		double current_temperature = model.calculateTemperature(current_x, y, z);
+		double previous_temperature = model.calculateTemperature(previous_x, y, z);
+		
+		if (current_temperature < limit_temperature) {
+			throw new SearchException("Die initiale Position bei der Suche der minmalen X-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie die Parameter an.");
+		}
+		
+		// Execute the search
+		
+		do {
+			if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
+				throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der minimalen X-Grenze überschritten. Bitte passen Sie die Parameter an.");
+			}
+			
+			final long inner_timestamp = System.currentTimeMillis();
+			
+			if (current_temperature > limit_temperature) {
+				do {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+						throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der minimalen X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+					}
+					previous_x = current_x;
+					previous_temperature = current_temperature;
+					
+					current_x -= step_size;
+					current_temperature = model.calculateTemperature(current_x, y, z);
+				} while (current_temperature > limit_temperature);
+			} else if (current_temperature < limit_temperature) {
+				do {
+					if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
+						throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der minimalen X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+					}
+					previous_x = current_x;
+					previous_temperature = current_temperature;
+					
+					current_x += step_size;
+					current_temperature = model.calculateTemperature(current_x, y, z);
+				} while (current_temperature < limit_temperature);
+			}
+			
+			step_size /= 10.0;
+		} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
+		
+		final double inner_x = Math.max(previous_x, current_x);
+		final double outer_x = Math.min(previous_x,  current_x);
+		
+		// System.out.println("[Search.findMinimumY(" + x + ", " + start_y + ", " + z + ")] Returning [" + inner_y + ", " + outer_y + "]");
+		
+		return new Range(inner_x, outer_x);
+	}
+	
+	public Path findMinimumXPath(final double start_x, final double start_y, final double z) throws SearchException {
 		
 		// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Starting ...");
 		
@@ -245,7 +311,7 @@ public class Search {
 		double previous_temperature = model.calculateTemperature(previous_x, current_y, z);
 
 		if (current_temperature < limit_temperature) {
-			throw new SearchException("Die initiale Position bei der Suche der unteren X-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+			throw new SearchException("Die initiale Position bei der Suche des unteren X-Pfades liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie die Parameter an.");
 		}
 		
 		Path path = new Path();
@@ -255,7 +321,7 @@ public class Search {
 		while (true) {			
 			do {
 				if (System.currentTimeMillis() - outer_timestamp > configuration.getOuterLimit()) {
-					throw new SearchException("Das äußere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");
+					throw new SearchException("Das äußere Zeitfenster wurde bei der Suche des unteren X-Pfades überschritten. Bitte passen Sie die Parameter an.");
 				}
 				
 				final long inner_timestamp = System.currentTimeMillis();
@@ -263,7 +329,7 @@ public class Search {
 				if (current_temperature > limit_temperature) {
 					do {
 						if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
-							throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+							throw new SearchException("Das erste innere Zeitfenster wurde bei der Suche des unteren X-Pfades überschritten. Bitte passen Sie die Parameter an.");	
 						}
 						previous_x = current_x;
 						previous_temperature = current_temperature;
@@ -274,7 +340,7 @@ public class Search {
 				} else if (current_temperature < limit_temperature) {
 					do {
 						if (System.currentTimeMillis() - inner_timestamp > configuration.getInnerLimit()) {
-							throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche der unteren X-Grenze überschritten. Bitte passen Sie die Parameter an.");	
+							throw new SearchException("Das zweite innere Zeitfenster wurde bei der Suche des unteren X-Pfades überschritten. Bitte passen Sie die Parameter an.");	
 						}
 						previous_x = current_x;
 						previous_temperature = current_temperature;
@@ -344,7 +410,7 @@ public class Search {
 		double previous_temperature = model.calculateTemperature(previous_x, y, z);
 
 		if (current_temperature < limit_temperature) {
-			throw new SearchException("Die initiale Position bei der Suche der oberen X-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie dich Parameter an.");
+			throw new SearchException("Die initiale Position bei der Suche der oberen X-Grenze liegt mit " + FORMAT.format(current_temperature) + "°C nicht innerhalb der Isotherm-Grenzen. Bitte passen sie die Parameter an.");
 		}
 		
 		// Execute the search
