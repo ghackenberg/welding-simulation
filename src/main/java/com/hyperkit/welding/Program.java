@@ -111,7 +111,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 
 		final JProgressBar progress_bar = new JProgressBar();
 
-		progress_bar.setString("0 / 0 Diagrammpunkte");
+		progress_bar.setString("0 von 0 Diagrammpunkten (0 von 0 Sekunden)");
 		progress_bar.setStringPainted(true);
 		progress_bar.setMinimum(0);
 		progress_bar.setMaximum(100);
@@ -245,20 +245,32 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 							// Create progress tracker
 							Progress progress = new Progress() {
+								private long start;
+								
 								@Override
 								public void initialize(int total) {
+									start = System.currentTimeMillis();
+									
 									progress_bar.setMaximum(total);
 									progress_bar.setValue(0);
+									progress_bar.setString("0 von " + total + " Diagrammpunkten (0 von 0 Sekunden)");
+								}
+								private void update(int current, int total) {
+									long now = System.currentTimeMillis();
+									long delta = now - start;
+									double end = ((double) delta / current) * total;
+									
+									progress_bar.setValue(current);
+									progress_bar.setString(current + " von " + total + " Diagrammpunkten (" + (int) Math.floor(delta / 1000) + " von " + (int) Math.floor(end / 1000) + " Sekunden)");
 								}
 								@Override
-								public void update(int current, int total) {
-									progress_bar.setString(current + " / " + total + " Diagrammpunkte");
-									progress_bar.setValue(current);
+								public synchronized void increment() {
+									update(progress_bar.getValue() + 1, progress_bar.getMaximum());
 								}
 							};
 							
 							// Generate datasets
-							generator_xy.generateDataset(path_min_x, max_x, 0, dataset_xy, progress);
+							generator_xy.generateDataset(path_min_x, min_x, max_x, 0, dataset_xy, progress);
 							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz_center, progress);
 							generator_xz.generateDataset(path_min_x, min_x, max_x, dataset_xz, progress);
 							generator_yz.generateDataset(widest_x.getX(), widest_x.getMaxY(), dataset_yz_widest, progress);

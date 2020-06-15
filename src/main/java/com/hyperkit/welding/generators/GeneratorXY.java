@@ -1,5 +1,7 @@
 package com.hyperkit.welding.generators;
 
+import java.util.stream.IntStream;
+
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -20,74 +22,73 @@ public class GeneratorXY extends Generator2D {
 		this.configuration = configuration;
 	}
 	
-	public void generateDataset(Path path_min_x, Range max_x, double z, XYSeriesCollection result, Progress progress) throws SearchException {
-		Range min_x = path_min_x.getLastSpan().getExtremeX();
+	public void generateDataset(Path path_min_x, Range min_x, Range max_x, double z, XYSeriesCollection result, Progress progress) throws SearchException {		
+		final XYSeries lower_series_positive = new XYSeries("Innen (+)");
+		final XYSeries upper_series_positive = new XYSeries("Auﬂen (+)");
 		
-		System.out.println("[RendererXY.generateDataset(" + path_min_x + ", " + max_x + ", progress)] " + min_x);
+		final XYSeries lower_series_negative = new XYSeries("Innen (-)");
+		final XYSeries upper_series_negative = new XYSeries("Auﬂen (-)");
 		
-		XYSeries lower_series = new XYSeries("Innen (+)");
-		XYSeries upper_series = new XYSeries("Auﬂen (+)");
+		final int samples = configuration.getXYSamples();
 		
-		XYSeries lower_series_2 = new XYSeries("Innen (-)");
-		XYSeries upper_series_2 = new XYSeries("Auﬂen (-)");
+		progress.initialize(samples);
 		
-		int samples = configuration.getXYSamples();
-		
-		progress.initialize(samples + 1);
-		
-		// System.out.println("[RendererXY.generateDataset(" + path_min_x + ", " + max_x + ", progress)] " + search.getModel().calculateTemperature(min_x.getInnerValue(), 0, z));
-		// System.out.println("[RendererXY.generateDataset(" + path_min_x + ", " + max_x + ", progress)] " + search.getModel().calculateTemperature(min_x.getOuterValue(), 0, z));
-		
-		// System.out.println("[RendererXY.generateDataset(" + path_min_x + ", " + max_x + ", progress)] " + search.getModel().calculateTemperature(max_x.getInnerValue(), 0, z));
-		// System.out.println("[RendererXY.generateDataset(" + path_min_x + ", " + max_x + ", progress)] " + search.getModel().calculateTemperature(max_x.getOuterValue(), 0, z));
-		
-		for (int sample = 0; sample < samples; sample++) {
-			double lower_x = (max_x.getInnerValue() - min_x.getInnerValue()) / samples * sample + min_x.getInnerValue();
-			double upper_x = (max_x.getOuterValue() - min_x.getOuterValue()) / samples * sample + min_x.getOuterValue();
-			
-			// Find span
-			
-			Range lower_y_range = new Range(0, 0);
-			
-			double lower_y_start = path_min_x.calculateStartY(lower_x);
-			
-			if (search.getModel().calculateTemperature(lower_x, lower_y_start, z) >= search.getConfiguration().getLimitTemperature()) {
-				lower_y_range = search.findMaximumY(lower_x, lower_y_start, z);
+		IntStream.range(0, samples).parallel().forEach(sample -> {
+			try {
+				double lower_x = (max_x.getInnerValue() - min_x.getInnerValue()) / (samples + 1) * (sample + 1) + min_x.getInnerValue();
+				double upper_x = (max_x.getOuterValue() - min_x.getOuterValue()) / (samples + 1) * (sample + 1) + min_x.getOuterValue();
+				
+				// Find span
+				
+				Range lower_y_range = new Range(0, 0);
+				
+				double lower_y_start = path_min_x.calculateStartY(lower_x);
+				
+				if (search.getModel().calculateTemperature(lower_x, lower_y_start, z) >= search.getConfiguration().getLimitTemperature()) {
+					lower_y_range = search.findMaximumY(lower_x, lower_y_start, z);
+				}
+				
+				Range upper_y_range = new Range(0, 0);
+				
+				double upper_y_start = path_min_x.calculateStartY(upper_x);
+				
+				if (search.getModel().calculateTemperature(upper_x,  upper_y_start, z) >= search.getConfiguration().getLimitTemperature()) {
+					upper_y_range = search.findMaximumY(upper_x, upper_y_start, z);
+				}
+				
+				synchronized (lower_series_positive) {
+					lower_series_positive.add(lower_x * 10, lower_y_range.getInnerValue() * 10);
+					upper_series_positive.add(upper_x * 10, upper_y_range.getOuterValue() * 10);
+					
+					lower_series_negative.add(lower_x * 10, - lower_y_range.getInnerValue() * 10);
+					upper_series_negative.add(upper_x * 10, - upper_y_range.getOuterValue() * 10);
+				}
+				
+				progress.increment();
+			} catch (SearchException e) {
+				throw new IllegalStateException(e);
 			}
+		});
+		
+		synchronized (lower_series_positive) {
+			lower_series_positive.add(min_x.getInnerValue() * 10, 0);
+			upper_series_positive.add(min_x.getOuterValue() * 10, 0);
 			
-			Range upper_y_range = new Range(0, 0);
+			lower_series_positive.add(max_x.getInnerValue() * 10, 0);
+			upper_series_positive.add(max_x.getOuterValue() * 10, 0);
+
+			lower_series_negative.add(min_x.getInnerValue() * 10, 0);
+			upper_series_negative.add(min_x.getOuterValue() * 10, 0);
 			
-			double upper_y_start = path_min_x.calculateStartY(upper_x);
-			
-			if (search.getModel().calculateTemperature(upper_x,  upper_y_start, z) >= search.getConfiguration().getLimitTemperature()) {
-				upper_y_range = search.findMaximumY(upper_x, upper_y_start, z);
-			}
-			
-			lower_series.add(lower_x * 10, lower_y_range.getInnerValue() * 10);
-			upper_series.add(upper_x * 10, upper_y_range.getOuterValue() * 10);
-			
-			lower_series_2.add(lower_x * 10, - lower_y_range.getInnerValue() * 10);
-			upper_series_2.add(upper_x * 10, - upper_y_range.getOuterValue() * 10);
-			
-			// System.out.println("Sample: " + sample + " " + lower_x + " " + lower_z_range);
-			//System.out.println("Sample: " + sample + " " + upper_x + " " + upper_z_range);
-			
-			progress.update(sample + 1, samples + 1);
+			lower_series_negative.add(max_x.getInnerValue() * 10, 0);
+			upper_series_negative.add(max_x.getOuterValue() * 10, 0);
 		}
 		
-		lower_series.add(max_x.getInnerValue() * 10, 0);
-		upper_series.add(max_x.getOuterValue() * 10, 0);
+		result.addSeries(lower_series_positive);
+		result.addSeries(upper_series_positive);
 		
-		lower_series_2.add(max_x.getInnerValue() * 10, 0);
-		upper_series_2.add(max_x.getOuterValue() * 10, 0);
-		
-		progress.update(samples + 1, samples + 1);
-		
-		result.addSeries(lower_series);
-		result.addSeries(upper_series);
-		
-		result.addSeries(lower_series_2);
-		result.addSeries(upper_series_2);
+		result.addSeries(lower_series_negative);
+		result.addSeries(upper_series_negative);
 	}
 	
 }

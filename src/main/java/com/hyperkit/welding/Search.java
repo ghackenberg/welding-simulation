@@ -479,7 +479,7 @@ public class Search {
 				final double next_x = min_x + step_x * step;
 				final double next_t = model.calculateTemperature(next_x, y, z);
 				
-				if (next_t > configuration.getLimitTemperature() + configuration.getTemperatureThershold()) {
+				if (next_t >= configuration.getLimitTemperature()) {
 					final double next_w = findMaximumY(next_x, y, z).getInnerValue();
 					
 					if (next_w > opt_w) {
@@ -512,7 +512,7 @@ public class Search {
 				final double next_x = min_x + step_x * step;
 				final double next_t = model.calculateTemperature(next_x, y, 0);
 				
-				if (next_t > configuration.getLimitTemperature() + configuration.getTemperatureThershold()) {
+				if (next_t >= configuration.getLimitTemperature()) {
 					final double next_d = findMinimumZ(next_x, y, 0).getInnerValue();
 					
 					if (next_d < opt_d) {
@@ -545,7 +545,7 @@ public class Search {
 				final double next_y = min_y + step_y * step;
 				final double next_t = model.calculateTemperature(x, next_y, 0);
 				
-				if (next_t > configuration.getLimitTemperature() + configuration.getTemperatureThershold()) {
+				if (next_t >= configuration.getLimitTemperature()) {
 					final double next_d = findMinimumZ(x, next_y, 0).getInnerValue();
 					
 					if (next_d < opt_d) {
