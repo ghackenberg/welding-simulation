@@ -4,13 +4,15 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Model;
-import com.hyperkit.welding.Path;
 import com.hyperkit.welding.Progress;
-import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Search;
-import com.hyperkit.welding.Span;
 import com.hyperkit.welding.configurations.Render2DConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
+import com.hyperkit.welding.structures.Path;
+import com.hyperkit.welding.structures.Range;
+import com.hyperkit.welding.structures.Span;
+import com.hyperkit.welding.structures.extremes.DeepestX;
+import com.hyperkit.welding.structures.extremes.WidestX;
 
 public class GeneratorYZ extends Generator2D {
 	
@@ -31,12 +33,10 @@ public class GeneratorYZ extends Generator2D {
 			double min_x = search.findMinimumX(x, y, 0).getInnerValue();
 			double max_x = search.findMaximumX(x, y, 0).getInnerValue();
 			
-			double deepest_x = search.findDeepestX(min_x, max_x, y);
+			DeepestX deepest_x = search.findDeepestX(min_x, max_x, y);
 			
-			Range min_z = search.findMinimumZ(deepest_x, y, 0);
-			
-			if (min_z.getInnerValue() < previous_optimum.getInnerValue()) {
-				return min_z;
+			if (deepest_x.getMinZ().getInnerValue() < previous_optimum.getInnerValue()) {
+				return deepest_x.getMinZ();
 			}
 		}
 		
@@ -66,22 +66,22 @@ public class GeneratorYZ extends Generator2D {
 			Range lower_z_range_opt = new Range(0, 0);
 			Range upper_z_range_opt = new Range(0, 0);
 			
-			double span_widest_x = search.findWidestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0, 0);
+			WidestX span_widest_x = search.findWidestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0, 0);
 			
 			lower_z_range_opt = tryRange(max_x.getInnerValue(), lower_y, lower_z_range_opt);
 			upper_z_range_opt = tryRange(max_x.getInnerValue(), upper_y, upper_z_range_opt);
 			
-			lower_z_range_opt = tryRange(span_widest_x, lower_y, lower_z_range_opt);
-			upper_z_range_opt = tryRange(span_widest_x, upper_y, upper_z_range_opt);
+			lower_z_range_opt = tryRange(span_widest_x.getX(), lower_y, lower_z_range_opt);
+			upper_z_range_opt = tryRange(span_widest_x.getX(), upper_y, upper_z_range_opt);
 			
 			for (Span span : path_min_x.getSpans()) {
-				span_widest_x = search.findWidestX(span.getExtremeX().getInnerValue(), span.getOriginX(), span.getY(), 0);
+				span_widest_x = span.getWidestX();
 				
 				lower_z_range_opt = tryRange(span.getOriginX(), lower_y, lower_z_range_opt);
-				lower_z_range_opt = tryRange(span_widest_x, lower_y, lower_z_range_opt);
+				lower_z_range_opt = tryRange(span_widest_x.getX(), lower_y, lower_z_range_opt);
 				
 				upper_z_range_opt = tryRange(span.getOriginX(), upper_y, upper_z_range_opt);
-				upper_z_range_opt = tryRange(span_widest_x, upper_y, upper_z_range_opt);
+				upper_z_range_opt = tryRange(span_widest_x.getX(), upper_y, upper_z_range_opt);
 			}
 			
 			lower_total_series_left.add(-lower_y * 10, lower_z_range_opt.getInnerValue() * 10);

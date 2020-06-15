@@ -31,6 +31,11 @@ import com.hyperkit.welding.renderers.Renderer3D;
 import com.hyperkit.welding.renderers.RendererXY;
 import com.hyperkit.welding.renderers.RendererXZ;
 import com.hyperkit.welding.renderers.RendererYZ;
+import com.hyperkit.welding.structures.Path;
+import com.hyperkit.welding.structures.Range;
+import com.hyperkit.welding.structures.Span;
+import com.hyperkit.welding.structures.extremes.DeepestX;
+import com.hyperkit.welding.structures.extremes.WidestX;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -198,67 +203,44 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							JOptionPane.showMessageDialog(frame, "Obere X-Grenze gefunden bei X=" + FORMAT.format(max_x.getOuterValue() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
 							// Calculate widest_x
-							double widest_x = min_x.getInnerValue();
-							Range max_y = search.findMaximumY(widest_x, path_min_x.getLastSpan().getY(), 0);
+							WidestX widest_x = search.findWidestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0, 0);
 							
 							for (Span span : path_min_x.getSpans()) {
 								System.out.println("[Program.run(\"" + String.join("\", \"", args) + "\")] Finding widest X on span " + span);
 								
-								double current_widest_x = search.findWidestX(span.getExtremeX().getInnerValue(), span.getOriginX(), span.getY(), 0);								
-								Range current_max_y = search.findMaximumY(current_widest_x, span.getY(), 0);
+								WidestX current_widest_x = search.findWidestX(span.getExtremeX().getInnerValue(), span.getOriginX(), span.getOriginY(), 0);
 								
-								if (current_max_y.getInnerValue() > max_y.getInnerValue()) {
+								span.setWidestX(current_widest_x);
+								
+								if (current_widest_x.getMaxY().getInnerValue() > widest_x.getMaxY().getInnerValue()) {
 									widest_x = current_widest_x;
-									max_y = current_max_y;
 								}
 							}
 							
-							System.out.println("[Program.run(\"" + String.join("\", \"", args) + "\")] Finding widest X between " + path_min_x.getFirstSpan().getOriginX() + " and " + max_x);
-							
-							double current_widest_x = search.findWidestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0, 0);								
-							Range current_max_y = search.findMaximumY(current_widest_x, 0, 0);
-							
-							if (current_max_y.getInnerValue() > max_y.getInnerValue()) {
-								widest_x = current_widest_x;
-								max_y = current_max_y;
-							}
-							
-							JOptionPane.showMessageDialog(frame, "Breiteste Stelle gefunden bei X=" + FORMAT.format(widest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(frame, "Breiteste Stelle gefunden bei X=" + FORMAT.format(widest_x.getX() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
 							// Calculate deepest_x
-							double deepest_x = min_x.getInnerValue();
-							Range min_z = search.findMinimumZ(deepest_x, path_min_x.getLastSpan().getY(), 0);
+							DeepestX deepest_x = search.findDeepestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0);
 							
 							for (Span span : path_min_x.getSpans()) {
 								System.out.println("[Program.run(\"" + String.join("\", \"", args) + "\") Finding deepest X on span " + span);
 								
-								double current_deepest_x = search.findDeepestX(span.getExtremeX().getInnerValue(), span.getOriginX(), span.getY());
-								Range current_min_z = search.findMinimumZ(current_deepest_x, span.getY(), 0);
+								DeepestX current_deepest_x = search.findDeepestX(span.getExtremeX().getInnerValue(), span.getOriginX(), span.getOriginY());
 								
-								if (current_min_z.getInnerValue() < min_z.getInnerValue()) {
+								span.setDeepestX(current_deepest_x);
+								
+								if (current_deepest_x.getMinZ().getInnerValue() < deepest_x.getMinZ().getInnerValue()) {
 									deepest_x = current_deepest_x;
-									min_z = current_min_z;
 								}
 							}
 							
-							System.out.println("[Program.run(\"" + String.join("\", \"", args) + "\")] Finding deepest X between " + path_min_x.getFirstSpan().getOriginX() + " and " + max_x);
-							
-							double current_deepest_x = search.findDeepestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0);
-							Range current_min_z = search.findMinimumZ(current_deepest_x, 0, 0);
-							
-							if (current_min_z.getInnerValue() < min_z.getInnerValue()) {
-								deepest_x = current_deepest_x;
-								min_z = current_min_z;
-							}
-							
-							JOptionPane.showMessageDialog(frame, "Tiefste Stelle gefunden bei X=" + FORMAT.format(deepest_x * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(frame, "Tiefste Stelle gefunden bei X=" + FORMAT.format(deepest_x.getX() * 10) + "mm", "Zwischenmeldung", JOptionPane.INFORMATION_MESSAGE);
 							
 							// Propagate values
 							listener.setPathMinX(path_min_x);
 							listener.setMinX(min_x);
 							listener.setMaxX(max_x);
 							listener.setWidestX(widest_x);
-							listener.setMaxY(max_y);
 							listener.setDeepestX(deepest_x);
 							
 							// Create progress tracker
@@ -279,9 +261,9 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							generator_xy.generateDataset(path_min_x, max_x, 0, dataset_xy, progress);
 							generator_xz.generateDataset(min_x, max_x, 0, dataset_xz_center, progress);
 							generator_xz.generateDataset(path_min_x, min_x, max_x, dataset_xz, progress);
-							generator_yz.generateDataset(widest_x, max_y, dataset_yz_widest, progress);
-							generator_yz.generateDataset(deepest_x, path_min_x.calculateStartY(deepest_x), dataset_yz_deepest, progress);
-							generator_yz.generateDataset(path_min_x, min_x, max_x, max_y, dataset_yz, progress);
+							generator_yz.generateDataset(widest_x.getX(), widest_x.getMaxY(), dataset_yz_widest, progress);
+							generator_yz.generateDataset(deepest_x.getX(), path_min_x.calculateStartY(deepest_x.getX()), dataset_yz_deepest, progress);
+							generator_yz.generateDataset(path_min_x, min_x, max_x, widest_x.getMaxY(), dataset_yz, progress);
 							
 							// Export datasets
 							new CSVExporter().export(dataset_xy, new File("dataset_xy.csv"));
@@ -289,9 +271,9 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							new CSVExporter().export(dataset_yz, new File("dataset_yz.csv"));
 							
 							// Render datasets
-							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xy);
-							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, max_y, min_z, dataset_xz);
-							new RendererYZ(chart_yz_panel, widest_x, deepest_x).run(min_x, max_x, max_y, min_z, dataset_yz);
+							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, widest_x.getMaxY(), deepest_x.getMinZ(), dataset_xy);
+							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, widest_x.getMaxY(), deepest_x.getMinZ(), dataset_xz);
+							new RendererYZ(chart_yz_panel, widest_x.getX(), deepest_x.getX()).run(min_x, max_x, widest_x.getMaxY(), deepest_x.getMinZ(), dataset_yz);
 							
 							// Update canvas
 							canvas.display();

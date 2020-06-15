@@ -3,6 +3,10 @@ package com.hyperkit.welding;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.renderers.Renderer3D;
+import com.hyperkit.welding.structures.Path;
+import com.hyperkit.welding.structures.Range;
+import com.hyperkit.welding.structures.extremes.DeepestX;
+import com.hyperkit.welding.structures.extremes.WidestX;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
@@ -27,10 +31,8 @@ public class Listener implements GLEventListener {
 	private Range min_x;
 	private Range max_x;
 	
-	private double widest_x;
-	private double deepest_x;
-	
-	private Range max_y;
+	private WidestX widest_x;
+	private DeepestX deepest_x;
 	
 	public Listener(XYSeriesCollection dataset_xy, XYSeriesCollection dataset_xz, XYSeriesCollection dataset_yz_widest, XYSeriesCollection dataset_yz_deepest, Renderer3D renderer) {
 		this.dataset_xy = dataset_xy;
@@ -53,16 +55,12 @@ public class Listener implements GLEventListener {
 		this.max_x = max_x;
 	}
 
-	public void setWidestX(double widest_x) {
+	public void setWidestX(WidestX widest_x) {
 		this.widest_x = widest_x;
 	}
 	
-	public void setDeepestX(double deepest_x) {
+	public void setDeepestX(DeepestX deepest_x) {
 		this.deepest_x = deepest_x;
-	}
-	
-	public void setMaxY(Range max_y) {
-		this.max_y = max_y;
 	}
 
 	@Override
@@ -82,7 +80,7 @@ public class Listener implements GLEventListener {
 	
 	@Override
 	public void display(GLAutoDrawable drawable) {
-		renderer.render(path_min_x, min_x, max_x, widest_x, max_y, deepest_x, dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, width, height, drawable, glu);
+		renderer.render(path_min_x, min_x, max_x, widest_x, deepest_x, dataset_xy, dataset_xz, dataset_yz_widest, dataset_yz_deepest, width, height, drawable, glu);
 	}
 	
 	@Override

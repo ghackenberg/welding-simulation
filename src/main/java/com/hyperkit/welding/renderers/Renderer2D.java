@@ -13,8 +13,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Integrator;
-import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Renderer;
+import com.hyperkit.welding.structures.Range;
 
 public abstract class Renderer2D extends Renderer {
 	

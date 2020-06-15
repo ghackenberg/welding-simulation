@@ -4,6 +4,12 @@ import java.text.DecimalFormat;
 
 import com.hyperkit.welding.configurations.SearchConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
+import com.hyperkit.welding.structures.Path;
+import com.hyperkit.welding.structures.Range;
+import com.hyperkit.welding.structures.Span;
+import com.hyperkit.welding.structures.extremes.DeepestX;
+import com.hyperkit.welding.structures.extremes.DeepestY;
+import com.hyperkit.welding.structures.extremes.WidestX;
 
 public class Search {
 	
@@ -353,14 +359,15 @@ public class Search {
 				step_size /= 10.0;
 			} while (Math.abs(previous_temperature - limit_temperature) > temperature_threshold || Math.abs(current_temperature - limit_temperature) > temperature_threshold);
 
-			Span span = new Span(origin_x, new Range(Math.max(previous_x,  current_x), Math.min(previous_x, current_x)), current_y, z);
+			final Range maximum_y = findMaximumY(Math.max(previous_x,  current_x), current_y, z);
+			
+			Span span = new Span(origin_x, current_y, new Range(Math.max(previous_x,  current_x), Math.min(previous_x, current_x)), maximum_y);
 			
 			System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Adding span " + path.getSpans().size() + " = " + span);
 			
 			path.getSpans().add(span);
 			
-			final double maximum_y = findMaximumY(Math.max(previous_x,  current_x), current_y, z).getInnerValue();
-			final double next_y = findDeepestY(Math.max(previous_x,  current_x), 0, maximum_y);
+			final double next_y = findDeepestY(Math.max(previous_x,  current_x), 0, maximum_y.getInnerValue()).getY();
 			
 			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Previous x = " + previous_x);
 			// System.out.println("[Search.findMinimumX(" + start_x + ", " + start_y + ", " + z + ")] Current x = " + current_x);
@@ -457,7 +464,7 @@ public class Search {
 		return new Range(inner_x, outer_x);
 	}
 	
-	public double findWidestX(final double min_x, final double max_x, final double y, final double z) throws SearchException {
+	public WidestX findWidestX(final double min_x, final double max_x, final double y, final double z) throws SearchException {
 		// System.out.println("[Search.findWidestX(" + min_x + ", " + max_x + ", " + z + ")]");
 		if (max_x - min_x > 0.000000001) {
 			final int steps = 10;
@@ -484,11 +491,13 @@ public class Search {
 			
 			return findWidestX(Math.max(opt_x - step_x, min_x), Math.min(opt_x + step_x, max_x), y, z);
 		} else {
-			return (min_x + max_x) / 2;
+			double x = (min_x + max_x) / 2;
+			
+			return new WidestX(x, findMaximumY(x, y, z), z);
 		}
 	}
 	
-	public double findDeepestX(final double min_x, final double max_x, final double y) throws SearchException {
+	public DeepestX findDeepestX(final double min_x, final double max_x, final double y) throws SearchException {
 		// System.out.println("[Search.findDeepestX(" + min_x + ", " + max_x + ", " + y + ")]");
 		if (max_x - min_x > 0.000000001) {
 			final int steps = 10;
@@ -515,11 +524,13 @@ public class Search {
 			
 			return findDeepestX(Math.max(opt_x - step_x, min_x), Math.min(opt_x + step_x, max_x), y);
 		} else {
-			return (min_x + max_x) / 2;
+			double x = (min_x + max_x) / 2;
+			
+			return new DeepestX(x, y, findMinimumZ(x, y, 0));
 		}
 	}
 	
-	public double findDeepestY(final double x, final double min_y, final double max_y) throws SearchException {
+	public DeepestY findDeepestY(final double x, final double min_y, final double max_y) throws SearchException {
 		// System.out.println("[Search.findDeepestY(" + x + ", " + min_y + ", " + max_y + ")]");
 		if (max_y - min_y > 0.000000001) {
 			final int steps = 10;
@@ -546,7 +557,9 @@ public class Search {
 			
 			return findDeepestY(x, Math.max(opt_y - step_y, min_y), Math.min(opt_y + step_y, max_y));
 		} else {
-			return (min_y + max_y) / 2;
+			double y = (min_y + max_y) / 2;
+			
+			return new DeepestY(x, y, findMinimumZ(x, y, 0));
 		}
 	}
 	

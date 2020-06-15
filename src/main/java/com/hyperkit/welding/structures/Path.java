@@ -1,4 +1,4 @@
-package com.hyperkit.welding;
+package com.hyperkit.welding.structures;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,16 +34,12 @@ public class Path {
 	}
 	
 	public double calculateStartY(double x) throws SearchException {
-		if (x >= spans.get(0).getOriginX()) {
-			return 0;
-		} else {
-			for (Span span : spans) {
-				if (x >= span.getExtremeX().getOuterValue() && x <= span.getOriginX()) {
-					return span.getY();
-				}
+		for (Span span : spans) {
+			if (x > span.getExtremeX().getOuterValue() && x <= span.getOriginX()) {
+				return span.getOriginY();
 			}
 		}
-		throw new SearchException("Could not calculate start X");
+		return 0;
 	}
 	
 	@Override

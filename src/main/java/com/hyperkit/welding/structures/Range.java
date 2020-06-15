@@ -1,4 +1,4 @@
-package com.hyperkit.welding;
+package com.hyperkit.welding.structures;
 
 public class Range {
 

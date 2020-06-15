@@ -3,12 +3,12 @@ package com.hyperkit.welding.generators;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import com.hyperkit.welding.Path;
 import com.hyperkit.welding.Progress;
-import com.hyperkit.welding.Range;
 import com.hyperkit.welding.Search;
 import com.hyperkit.welding.configurations.Render2DConfiguration;
 import com.hyperkit.welding.exceptions.SearchException;
+import com.hyperkit.welding.structures.Path;
+import com.hyperkit.welding.structures.Range;
 
 public class GeneratorXY extends Generator2D {
 	
@@ -47,26 +47,20 @@ public class GeneratorXY extends Generator2D {
 			
 			// Find span
 			
-			Range lower_y_range;
+			Range lower_y_range = new Range(0, 0);
 			
-			try {
-				lower_y_range = search.findMaximumY(lower_x, path_min_x.calculateStartY(lower_x), z);
-				/*
-				double inner_temperature = search.getModel().calculateTemperature(lower_x, lower_y_range.getInnerValue(), z);
-				double outer_temperature = search.getModel().calculateTemperature(lower_x, lower_y_range.getOuterValue(), z);
-				
-				System.out.println("Sample " + sample + " at (" + lower_x + ", " + path_min_x.calculateStartY(lower_x) + ", " + z + ") succeeded with " + lower_y_range + " and temperatures [" + inner_temperature + ", " + outer_temperature + "]");
-				*/
-			} catch (SearchException exception) {
-				lower_y_range = new Range(0, 0);
+			double lower_y_start = path_min_x.calculateStartY(lower_x);
+			
+			if (search.getModel().calculateTemperature(lower_x, lower_y_start, z) >= search.getConfiguration().getLimitTemperature()) {
+				lower_y_range = search.findMaximumY(lower_x, lower_y_start, z);
 			}
 			
-			Range upper_y_range;
+			Range upper_y_range = new Range(0, 0);
 			
-			try {
-				upper_y_range = search.findMaximumY(upper_x, path_min_x.calculateStartY(upper_x), z);
-			} catch (SearchException exception) {
-				upper_y_range = new Range(0, 0);
+			double upper_y_start = path_min_x.calculateStartY(upper_x);
+			
+			if (search.getModel().calculateTemperature(upper_x,  upper_y_start, z) >= search.getConfiguration().getLimitTemperature()) {
+				upper_y_range = search.findMaximumY(upper_x, upper_y_start, z);
 			}
 			
 			lower_series.add(lower_x * 10, lower_y_range.getInnerValue() * 10);
