@@ -223,7 +223,7 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							DeepestX deepest_x = search.findDeepestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0);
 							
 							for (Span span : path_min_x.getSpans()) {
-								System.out.println("[Program.run(\"" + String.join("\", \"", args) + "\") Finding deepest X on span " + span);
+								System.out.println("[Program.run(\"" + String.join("\", \"", args) + "\")] Finding deepest X on span " + span);
 								
 								DeepestX current_deepest_x = search.findDeepestX(span.getExtremeX().getInnerValue(), span.getOriginX(), span.getOriginY());
 								

@@ -79,35 +79,35 @@ public class Renderer3D extends Generator {
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
 		gl.glPointSize(configuration.getPointSize());
 
-		double points_step = configuration.getSamples();
+		final double points_step = configuration.getSamples();
 
 		gl.glBegin(GL2.GL_POINTS);
 
-		double min = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
-		double max = search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold();
+		final double limit = search.getConfiguration().getLimitTemperature();
+		
+		double min = limit;
+		double max = limit;
 
-		for (double x = min_x.getInnerValue(); x <= max_x.getInnerValue(); x += points_step) {
-			for (double y = -Math.abs(range_y.getInnerValue()); y <= 0; y+= points_step) {
-			//for (double z = -Math.abs(range_z.getLowerValue()); z <= Math.abs(range_z.getLowerValue()); z += points_step) {
+		for (double x = min_x.getInnerValue() * 1.2; x <= max_x.getInnerValue() * 1.2; x += points_step) {
+			for (double y = -Math.abs(range_y.getInnerValue()) * 1.2; y <= 0; y+= points_step) {
 				double temperature = search.getModel().calculateTemperature(x, y, 0);
 				
-				if (temperature >= search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold()) {
-					max = Math.max(max, temperature);
-				}
-			//}
+				min = Math.min(min, temperature);
+				max = Math.max(max, temperature);
 			}
 		}
 
-		for (double x = min_x.getInnerValue(); x <= max_x.getInnerValue(); x += points_step) {
-			for (double y = -Math.abs(range_y.getInnerValue()); y <= Math.abs(range_y.getInnerValue()); y += points_step) {
-			//for (double z = -Math.abs(range_z.getLowerValue()) * 2; z <= Math.abs(range_z.getLowerValue()) * 2; z += points_step) {
+		for (double x = min_x.getInnerValue() * 1.2; x <= max_x.getInnerValue() * 1.2; x += points_step) {
+			for (double y = -Math.abs(range_y.getInnerValue()) * 1.2; y <= Math.abs(range_y.getInnerValue()) * 1.2; y += points_step) {
 				double temperature = search.getModel().calculateTemperature(x, y, 0);
 				
-				if (temperature >= search.getConfiguration().getLimitTemperature() - search.getConfiguration().getTemperatureThershold()) {
-					gl.glColor3d(Math.sqrt((temperature - min) / (max - min)), Math.sqrt(1 - (temperature - min) / (max - min)), 0);
-					gl.glVertex3d(x, 0, y);
+				if (temperature >= limit) {
+					gl.glColor3d((temperature - limit) / (max - limit), 1 - (temperature - limit) / (max - limit), 0);
+				} else {
+					gl.glColor3d(0.5 + 0.4 * (limit - temperature) / (limit - min), 0.5 + 0.4 * (limit - temperature) / (limit - min), 0.5 + 0.4 * (limit - temperature) / (limit - min));
 				}
-			// }
+				
+				gl.glVertex3d(x, 0, y);
 			}
 		}
 
