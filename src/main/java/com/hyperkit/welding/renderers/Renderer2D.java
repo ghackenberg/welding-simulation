@@ -14,14 +14,22 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import com.hyperkit.welding.Integrator;
 import com.hyperkit.welding.Renderer;
+import com.hyperkit.welding.structures.Path;
 import com.hyperkit.welding.structures.Range;
+import com.hyperkit.welding.structures.extremes.DeepestX;
+import com.hyperkit.welding.structures.extremes.WidestX;
 
 public abstract class Renderer2D extends Renderer {
 	
+	private JFreeChart chart;
+	protected XYPlot plot;
+	private ValueAxis domain;
+	private ValueAxis range;
 	private ChartPanel chart_panel;
 	private String name;
 	private String x_axis;
 	private String y_axis;
+	protected double xyzInterval;
 	
 	public Renderer2D(ChartPanel chart_panel, String name, String x_axis, String y_axis) {
 		this.chart_panel = chart_panel;
@@ -32,7 +40,7 @@ public abstract class Renderer2D extends Renderer {
 	
 	protected abstract String getAnnotation();
 	
-	public void run(Range min_x, Range max_x, Range max_y, Range min_z, XYSeriesCollection dataset) {
+	protected void run(Range min_x, Range max_x, Path path_min_x, WidestX widest_x, DeepestX deepest_x, XYSeriesCollection dataset) {
 		
 		double upper_area = Integrator.calculateArea(dataset.getSeries(0));
 		double lower_area = Integrator.calculateArea(dataset.getSeries(1));
@@ -42,23 +50,24 @@ public abstract class Renderer2D extends Renderer {
 
 		// Create chart
 
-		JFreeChart chart = ChartFactory.createXYLineChart(name + " (Fläche = " + FORMAT.format(lower_area) + " bis " + FORMAT.format(upper_area) + " mm², " + getAnnotation() + ")",  x_axis + " (in mm)", y_axis + " (in mm)", dataset, PlotOrientation.VERTICAL, true, true, false);
+		chart = ChartFactory.createXYLineChart(name + " (Fläche = " + FORMAT.format(lower_area) + " bis " + FORMAT.format(upper_area) + " mm², " + getAnnotation() + ")",  x_axis + " (in mm)", y_axis + " (in mm)", dataset, PlotOrientation.VERTICAL, true, true, false);
 
 		// Get plot
 
-		XYPlot plot = chart.getXYPlot();
+		plot = chart.getXYPlot();
 		
 		// Get axes
 		
-		ValueAxis domain = plot.getDomainAxis();
-		ValueAxis range = plot.getRangeAxis();
+		domain = plot.getDomainAxis();
+		range = plot.getRangeAxis();
 
 		// Synchronize axes
 		
 		double xInterval = (max_x.getOuterValue() - min_x.getOuterValue()) * 10 * 1.1;
-		double yInterval = max_y.getOuterValue() * 2 * 10 * 1.1;
-		double zInterval = -min_z.getOuterValue() * 10 * 1.1;
-		double xyzInterval = Math.max(Math.max(xInterval, yInterval), zInterval);
+		double yInterval = widest_x.getMaxY().getOuterValue() * 2 * 10 * 1.1;
+		double zInterval = -deepest_x.getMinZ().getOuterValue() * 10 * 1.1;
+		
+		xyzInterval = Math.max(Math.max(xInterval, yInterval), zInterval);
 		
 		double domainInterval = domain.getUpperBound() - domain.getLowerBound();
 		double rangeInterval = range.getUpperBound() - range.getLowerBound();

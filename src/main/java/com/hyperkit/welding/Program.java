@@ -182,6 +182,11 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							
 							// Perform calculation
 							
+							// Clean charts
+							chart_xy_panel.setChart(null);
+							chart_xz_panel.setChart(null);
+							chart_yz_panel.setChart(null);
+							
 							// Clean datasets
 							dataset_xy.removeAllSeries();
 							dataset_xz.removeAllSeries();
@@ -283,9 +288,9 @@ public abstract class Program<S extends ModelConfiguration, T extends Model<S>> 
 							new CSVExporter().export(dataset_yz, new File("dataset_yz.csv"));
 							
 							// Render datasets
-							new RendererXY(chart_xy_panel, 0).run(min_x, max_x, widest_x.getMaxY(), deepest_x.getMinZ(), dataset_xy);
-							new RendererXZ(chart_xz_panel, 0).run(min_x, max_x, widest_x.getMaxY(), deepest_x.getMinZ(), dataset_xz);
-							new RendererYZ(chart_yz_panel, widest_x.getX(), deepest_x.getX()).run(min_x, max_x, widest_x.getMaxY(), deepest_x.getMinZ(), dataset_yz);
+							new RendererXY(chart_xy_panel, 0).run(search, min_x, max_x, path_min_x, widest_x, deepest_x, dataset_xy);
+							new RendererXZ(chart_xz_panel, 0).run(search, min_x, max_x, path_min_x, widest_x, deepest_x, dataset_xz);
+							new RendererYZ(chart_yz_panel, widest_x.getX(), deepest_x.getX()).run(search, min_x, max_x, path_min_x, widest_x, deepest_x, dataset_yz);
 							
 							// Update canvas
 							canvas.display();
