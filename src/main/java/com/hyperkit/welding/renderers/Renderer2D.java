@@ -2,10 +2,14 @@ package com.hyperkit.welding.renderers;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.geom.Arc2D;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.annotations.XYBoxAnnotation;
+import org.jfree.chart.annotations.XYLineAnnotation;
+import org.jfree.chart.annotations.XYShapeAnnotation;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
@@ -20,6 +24,9 @@ import com.hyperkit.welding.structures.extremes.DeepestX;
 import com.hyperkit.welding.structures.extremes.WidestX;
 
 public abstract class Renderer2D extends Renderer {
+	
+	final protected BasicStroke SOLID = new BasicStroke();
+	final protected BasicStroke DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0);
 	
 	private JFreeChart chart;
 	protected XYPlot plot;
@@ -111,6 +118,19 @@ public abstract class Renderer2D extends Renderer {
 
 		chart_panel.setChart(chart);
 		
+	}
+	
+	protected void addCircle(double x, double y, Color color) {
+		plot.addAnnotation(new XYShapeAnnotation(new Arc2D.Double(x - Math.sqrt(2) * xyzInterval / 200, y - Math.sqrt(2) * xyzInterval / 200, Math.sqrt(2) * xyzInterval / 100, Math.sqrt(2) * xyzInterval / 100, 0, 360, Arc2D.OPEN), new BasicStroke(), color));
+	}
+	
+	protected void addBox(double x, double y, Color color) {
+		plot.addAnnotation(new XYBoxAnnotation(x - xyzInterval / 200, y - xyzInterval / 200, x + xyzInterval / 200, y + xyzInterval / 200, new BasicStroke(), color));
+	}
+	
+	protected void addCross(double x, double y, Color color) {
+		plot.addAnnotation(new XYLineAnnotation(x - xyzInterval / 200, y - xyzInterval / 200, x + xyzInterval / 200, y + xyzInterval / 200, new BasicStroke(), color));
+		plot.addAnnotation(new XYLineAnnotation(x - xyzInterval / 200, y + xyzInterval / 200, x + xyzInterval / 200, y - xyzInterval / 200, new BasicStroke(), color));
 	}
 
 }
