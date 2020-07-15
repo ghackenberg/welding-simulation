@@ -63,8 +63,8 @@ public class GeneratorYZ extends Generator2D {
 				
 				WidestX span_widest_x = search.findWidestX(path_min_x.getFirstSpan().getOriginX(), max_x.getInnerValue(), 0, 0);
 				
-				lower_z_range_opt = tryRange(max_x.getInnerValue(), lower_y, lower_z_range_opt);
-				upper_z_range_opt = tryRange(max_x.getInnerValue(), upper_y, upper_z_range_opt);
+				//lower_z_range_opt = tryRange(max_x.getInnerValue(), lower_y, lower_z_range_opt);
+				//upper_z_range_opt = tryRange(max_x.getInnerValue(), upper_y, upper_z_range_opt);
 				
 				lower_z_range_opt = tryRange(span_widest_x.getX(), lower_y, lower_z_range_opt);
 				upper_z_range_opt = tryRange(span_widest_x.getX(), upper_y, upper_z_range_opt);
@@ -72,10 +72,10 @@ public class GeneratorYZ extends Generator2D {
 				for (Span span : path_min_x.getSpans()) {
 					span_widest_x = span.getWidestX();
 					
-					lower_z_range_opt = tryRange(span.getOriginX(), lower_y, lower_z_range_opt);
+					//lower_z_range_opt = tryRange(span.getOriginX(), lower_y, lower_z_range_opt);
 					lower_z_range_opt = tryRange(span_widest_x.getX(), lower_y, lower_z_range_opt);
 					
-					upper_z_range_opt = tryRange(span.getOriginX(), upper_y, upper_z_range_opt);
+					//upper_z_range_opt = tryRange(span.getOriginX(), upper_y, upper_z_range_opt);
 					upper_z_range_opt = tryRange(span_widest_x.getX(), upper_y, upper_z_range_opt);
 				}
 				
